@@ -4,6 +4,16 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.3.2] - 2026-11-08
+
+### Mensagens Claras de Horário de Encerramento e Abertura
+- **Commit:** `feat: improve closed status message showing exact closing and opening hours`
+  - Exibição destacada do horário exato de encerramento (`Nosso expediente de hoje encerrou às HH:MM`) quando o horário atual for posterior ao fechamento.
+  - Exibição de badge dinâmico (`EXPEDIENTE ENCERRADO` vs `ABRE ÀS HH:MM`) e textos acolhedores orientando o agendamento no calendário.
+  - Testes automatizados atualizados e validados.
+
+---
+
 ## [1.3.1] - 2026-11-08
 
 ### Card Ao Vivo Inteligente (Status de Almoço e Fechamento)

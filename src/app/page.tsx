@@ -379,13 +379,13 @@ export default function ClientPage() {
             </p>
           </section>
         ) : (
-          /* CARD DE FORA DO EXPEDIENTE (FECHADA NO MOMENTO) */
+          /* CARD DE FORA DO EXPEDIENTE (FECHADA NO MOMENTO / EXPEDIENTE ENCERRADO) */
           <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900/90 to-black border border-neutral-800 p-5 shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="inline-block h-3 w-3 rounded-full bg-neutral-500"></span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                  Fora do Horário
+                <span className={`inline-block h-2.5 w-2.5 rounded-full ${queue.liveStatus.statusTitle === "Expediente Encerrado" ? "bg-amber-600/80" : "bg-neutral-500"}`}></span>
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-300">
+                  {queue.liveStatus.statusTitle === "Expediente Encerrado" ? "Expediente Encerrado" : `Abre às ${queue.liveStatus.openTime || "09:00"}`}
                 </span>
               </div>
               <Clock className="w-5 h-5 text-gold/70" />
@@ -393,15 +393,17 @@ export default function ClientPage() {
 
             <div className="mt-4 space-y-1">
               <div className="text-2xl font-extrabold text-white tracking-tight">
-                Fechada no Momento
+                {queue.liveStatus.statusTitle === "Expediente Encerrado" ? "Expediente Encerrado" : "Fechada no Momento"}
               </div>
-              <div className="text-xs text-neutral-300">
+              <div className="text-xs font-medium text-gold/90">
                 {queue.liveStatus.statusMessage}
               </div>
             </div>
 
             <p className="mt-2 text-xs text-neutral-400 leading-normal">
-              Atendimento presencial fechado no momento. Você pode agendar seu horário com antecedência no calendário abaixo!
+              {queue.liveStatus.statusTitle === "Expediente Encerrado"
+                ? "O atendimento presencial por ordem de chegada já encerrou por hoje. Você pode garantir seu corte para os próximos dias no calendário abaixo!"
+                : "Ainda não abrimos as portas hoje. Você já pode garantir seu horário com antecedência no calendário abaixo!"}
             </p>
           </section>
         )}

@@ -235,7 +235,7 @@ export async function getLiveBarberStatus(referenceDate: Date = new Date()): Pro
       isOpenNow: false,
       statusType: "closed",
       statusTitle: "Fechada no Momento",
-      statusMessage: `Abrimos hoje às ${openTime}.`,
+      statusMessage: `Nosso expediente hoje começa às ${openTime}.`,
       openTime,
       closeTime,
     };
@@ -245,8 +245,8 @@ export async function getLiveBarberStatus(referenceDate: Date = new Date()): Pro
     return {
       isOpenNow: false,
       statusType: "closed",
-      statusTitle: "Fechada no Momento",
-      statusMessage: "Encerramos o expediente de hoje.",
+      statusTitle: "Expediente Encerrado",
+      statusMessage: `Nosso expediente de hoje encerrou às ${closeTime}.`,
       openTime,
       closeTime,
     };

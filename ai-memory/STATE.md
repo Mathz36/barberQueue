@@ -1,19 +1,20 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** STATUS AO VIVO DE ALMOÇO E FECHAMENTO ENTREGUE E TESTADO  
+> **Status Geral:** MENSAGENS DETALHADAS DE FECHAMENTO E ABERTURA ENTREGUES E TESTADAS  
 > **Fase Atual:** Fase 10 - Refinamentos de UX Operacional  
 
 ---
 
 ## 📌 Contexto Atual e Entregas Recentes
 
-- **Card Ao Vivo Inteligente:** O card no topo da tela do cliente agora reflete com precisão o estado operacional da barbearia no fuso de São Paulo (`America/Sao_Paulo`):
-  - *Horário de Almoço:* Exibe card âmbar com aviso de retorno (`Retorno previsto às HH:MM`).
-  - *Fechada Hoje:* Exibe motivo da folga/bloqueio ou aviso de dia de descanso (ex: Domingo).
-  - *Fora de Horário:* Informa o horário de abertura ou encerramento do expediente.
-  - *Aberta:* Indicador verde pulsante com contagem da fila e ordem de chegada.
-- **Suíte de Testes:** Bateria de testes automatizados [`tests/live-status.test.ts`](tests/live-status.test.ts) validando todas as transições com 29 testes 100% verdes.
+- **Horário Exato de Encerramento:** Quando o horário atual passar do expediente (ex: expediente era até às 17:32 e agora são 17:35), o card ao vivo exibe com clareza:
+  - Badge: `EXPEDIENTE ENCERRADO`
+  - Título: `Expediente Encerrado`
+  - Horário destacado: `Nosso expediente de hoje encerrou às HH:MM.`
+  - Texto orientador convidando o cliente a agendar para amanhã ou outros dias no calendário.
+- **Antes da Abertura:** Exibe badge `ABRE ÀS HH:MM`, título `Fechada no Momento` e horário de início da jornada.
+- **Suíte de Testes:** 29 testes automatizados passando 100% verde (`npm test`).
 - **Supabase & Vercel:** Totalmente integrados e preparados para receber credenciais no `.env.local` e no painel da Vercel.
 
 **Onde Paramos:**

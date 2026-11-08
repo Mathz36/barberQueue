@@ -65,6 +65,8 @@ describe("Live Barber Status (Detecção de Fechamento e Almoço ao Vivo)", () =
 
     expect(status.isOpenNow).toBe(false);
     expect(status.statusType).toBe("closed");
+    expect(status.statusTitle).toBe("Expediente Encerrado");
+    expect(status.statusMessage).toContain("19:00");
   });
 
   it("deve acusar 'day_off' em dias que a barbearia não abre (ex: Domingo)", async () => {
