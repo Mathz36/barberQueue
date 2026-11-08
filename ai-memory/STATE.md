@@ -1,46 +1,25 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** IMPLEMENTAÇÃO CONCLUÍDA E TESTADA COM SUCESSO (15/15 TESTES PASSANDO)  
-> **Fase Atual:** Fase 2 - Entrega da Aplicação Completa & Homologação  
+> **Status Geral:** NOVOS REQUISITOS RECEBIDOS (UPLOAD DE IMAGEM & HORÁRIOS POR DIA COM ALMOÇO) - AGUARDANDO AUTORIZAÇÃO  
+> **Fase Atual:** Fase 3 - Evolução do Painel Administrativo e Regras de Horários  
 
 ---
 
-## 📌 Contexto Atual e Onde Paramos
+## 📌 Contexto Atual e Novos Requisitos
 
-Todas as funcionalidades solicitadas foram implementadas, integradas e aprovadas pela suíte automatizada de testes:
+O usuário solicitou dois ajustes importantes para o painel de administração (`/admin`) e lógica de agendamento:
 
-1. **Storage JSON & Retenção Semanal (Sem Banco de Dados):**
-   - Todos os dados persistidos em `data/*.json` com escrita atômica contra corrupção.
-   - Algoritmo dominical de expurgo (`pruneOldAppointments`): todo domingo purga agendamentos da semana anterior, mantendo apenas a semana corrente.
-2. **Lado do Cliente (Mobile-First & Aconchegante):**
-   - Header com foto de perfil redonda do barbeiro, banner, bio aberta e botões diretos de WhatsApp e Instagram.
-   - Card em destaque no topo informando a quantidade de pessoas na barbearia ao vivo com atualização em tempo real (polling inteligente).
-   - Calendário responsivo com slots de 1h mostrando apenas a quantidade anônima de pessoas que agendaram.
-   - Modal de agendamento solicitando apenas o nome do cliente.
-   - Modal acolhedor com as regras expressas da barbearia (*"Obrigado pelo agendamento! Informamos que a barbearia dá prioridade à ordem de chegada, portanto não se atrase"*).
-   - Alerta visual no calendário para dias marcados como fechados pelo barbeiro.
-3. **Lado do Barbeiro / Admin (`/admin`):**
-   - Protegido por PIN de 4 dígitos (PIN padrão: `1234`).
-   - Controle instantâneo da fila no topo com botões grandes de `+`, `-`, visualizador do número e botão `Zerar`.
-   - Agenda detalhada com visualização dos nomes dos clientes por horário.
-   - Bloqueio de dia de não funcionamento com mensagem personalizada e cancelamento automático dos agendamentos da data.
-   - Configuração de horários de atendimento (abertura e fechamento).
-   - Customização de foto, banner, redes, bio e seletores de Cor Principal e Secundária (com preview ao vivo).
-4. **Qualidade & CI/CD (Tester Agent):**
-   - 15 testes automatizados cobrindo storage atômico, limpeza semanal, operações de fila e endpoints da API.
-   - Build de produção compilado com sucesso (`next build`).
+1. **Upload Direto de Imagem (Substituição de URLs externas):**
+   - Permitir que o barbeiro faça upload direto de arquivos de imagem do seu celular/computador (foto de perfil e banner).
+   - Política de sobrescrita: uma imagem sobrescreve a anterior para não acumular arquivos desnecessários no disco (`public/uploads/avatar.*` e `public/uploads/banner.*`).
+2. **Horários de Atendimento Individuais por Dia da Semana (Segunda a Domingo):**
+   - Exibir todos os dias da semana (Segunda a Domingo).
+   - Permitir ativar/desativar cada dia individualmente.
+   - Configurar horário de abertura e fechamento para cada dia.
+   - Configurar **horário de almoço opcional** (início e fim): se preenchido, os slots desse período são omitidos da agenda do cliente; se deixado vazio, não há pausa para almoço.
 
----
+O **Planner Agent** atualizou o modelo técnico em [`ai-memory/ARCHITECTURE.md`](./ARCHITECTURE.md) e o backlog de tarefas em [`ai-memory/TASKS.md`](./TASKS.md).
 
-## 🚀 Próximos Passos Sugeridos
-
-1. O usuário pode iniciar o servidor de desenvolvimento (`npm run dev`) ou produção (`npm run build && npm start`) e navegar em `http://localhost:3000` (Cliente) e `http://localhost:3000/admin` (Barbeiro).
-2. Definir o PIN final e personalizar as fotos reais do barbeiro e cores pelo próprio painel `/admin`.
-
----
-
-## 🤝 Handover / Passagem de Bastão
-
-- **Agente Responsável:** Planner Agent & Tester Agent
-- **Status do Código:** 100% testado, build verde, branch `main` limpa e sincronizada.
+**Onde Paramos:**
+Apresentando o plano técnico de **O QUE** e **COMO** e aguardando a autorização expressa do usuário antes de aplicar as modificações.
