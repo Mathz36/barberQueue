@@ -1,0 +1,16 @@
+[
+  {
+    "id": "apt_current_1",
+    "clientName": "Cliente Semana Atual 1",
+    "date": "2026-11-08",
+    "timeSlot": "09:00",
+    "createdAt": "2026-11-08T09:00:00.000Z"
+  },
+  {
+    "id": "apt_1794150396584_dcrqw",
+    "clientName": "João Barba",
+    "date": "2026-11-10",
+    "timeSlot": "10:00",
+    "createdAt": "2026-11-08T15:06:36.584Z"
+  }
+]
