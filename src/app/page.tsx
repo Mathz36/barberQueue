@@ -113,7 +113,8 @@ export default function ClientPage() {
 
   const handleOpenBooking = (timeSlot: string) => {
     setSelectedSlot(timeSlot);
-    setClientName("");
+    const savedName = typeof window !== "undefined" ? localStorage.getItem("barbearia_client_name") || "" : "";
+    setClientName(savedName);
     setBookingError("");
     setModalOpen(true);
   };
@@ -142,6 +143,14 @@ export default function ClientPage() {
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Erro ao agendar.");
+      }
+
+      // Salva nome no localStorage para agilizar próximos agendamentos no celular
+      if (typeof window !== "undefined") {
+        localStorage.setItem("barbearia_client_name", clientName.trim());
+        if ("vibrate" in navigator) {
+          navigator.vibrate?.([30, 20, 30]);
+        }
       }
 
       // Fecha modal de input e abre modal de regras e agradecimento

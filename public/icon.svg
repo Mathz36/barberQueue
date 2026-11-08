@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF2A3" />
+      <stop offset="60%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#AA8C2C" />
+    </radialGradient>
+    <linearGradient id="darkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1F1F1F" />
+      <stop offset="100%" stop-color="#0A0A0A" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded rectangle -->
+  <rect width="512" height="512" rx="128" fill="url(#darkBg)" stroke="#D4AF37" stroke-width="8" />
+
+  <!-- Outer Gold Ring -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="url(#goldGlow)" stroke-width="12" stroke-dasharray="16 8" />
+
+  <!-- Stylized Barber Scissors & Comb Icon in Gold -->
+  <g fill="url(#goldGlow)" transform="translate(106, 106)">
+    <!-- Scissor Loop Left -->
+    <path d="M 60 210 C 35 210 15 190 15 165 C 15 140 35 120 60 120 C 78 120 94 131 101 147 L 140 180 L 126 195 L 94 170 C 86 179 74 185 60 185 C 49 185 40 176 40 165 C 40 154 49 145 60 145 C 71 145 80 154 80 165 C 80 170 78 174 75 177 L 85 188 C 91 182 95 174 95 165 C 95 146 79 130 60 130 C 41 130 25 146 25 165 C 25 184 41 200 60 200 C 72 200 82 194 88 185 L 145 140 L 220 50 L 235 65 L 155 155 Z" />
+    <!-- Scissor Loop Right -->
+    <path d="M 240 210 C 265 210 285 190 285 165 C 285 140 265 120 240 120 C 222 120 206 131 199 147 L 160 180 L 174 195 L 206 170 C 214 179 226 185 240 185 C 251 185 260 176 260 165 C 260 154 251 145 240 145 C 229 145 220 154 220 165 C 220 170 222 174 225 177 L 215 188 C 209 182 205 174 205 165 C 205 146 221 130 240 130 C 259 130 275 146 275 165 C 275 184 259 200 240 200 C 228 200 218 194 212 185 L 155 140 L 80 50 L 65 65 L 145 155 Z" />
+    <!-- Scissor Pivot Pin -->
+    <circle cx="150" cy="150" r="10" fill="#FFFFFF" />
+  </g>
+
+  <!-- Crown / Star Accent -->
+  <polygon points="256,110 268,135 296,138 274,156 281,183 256,168 231,183 238,156 216,138 244,135" fill="url(#goldGlow)" />
+</svg>

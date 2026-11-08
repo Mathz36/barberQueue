@@ -20,9 +20,17 @@ import {
   Coffee,
   X,
   Image as ImageIcon,
+  ChevronDown,
+  AlertCircle,
+  Share2,
 } from "lucide-react";
 import { BarberProfile, LiveQueue, Appointment, BlockedDay, BusinessSchedule, DayScheduleConfig } from "@/types";
 import ThemeInjector from "@/components/ThemeInjector";
+
+interface NotificationState {
+  type: "success" | "error";
+  message: string;
+}
 
 export default function AdminPage() {
   // Autenticação por PIN
@@ -48,8 +56,19 @@ export default function AdminPage() {
   const [uploadingAvatar, setUploadingAvatar] = useState<boolean>(false);
   const [uploadingBanner, setUploadingBanner] = useState<boolean>(false);
 
-  // Feedbacks visuais
-  const [saveSuccess, setSaveSuccess] = useState<string>("");
+  // Estados dos Dropdowns / Acordeões
+  const [isScheduleOpen, setIsScheduleOpen] = useState<boolean>(false);
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
+
+  // Sistema de Notificações (Toast)
+  const [notification, setNotification] = useState<NotificationState | null>(null);
+
+  const showNotification = (type: "success" | "error", message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => {
+      setNotification((curr) => (curr?.message === message ? null : curr));
+    }, 4000);
+  };
 
   // Inicializa data atual
   useEffect(() => {
@@ -85,26 +104,30 @@ export default function AdminPage() {
         setAuthError("PIN incorreto. Tente novamente.");
       }
     } catch {
-      setAuthError("Erro de comunicação.");
+      setAuthError("Erro de comunicação ao validar PIN.");
     }
   };
 
   const loadAllAdminData = async (activePin: string) => {
     fetch("/api/profile")
       .then((r) => r.json())
-      .then((d) => setProfile(d));
+      .then((d) => setProfile(d))
+      .catch((err) => showNotification("error", `Erro ao carregar perfil: ${err.message}`));
 
     fetch("/api/queue")
       .then((r) => r.json())
-      .then((d) => setQueue(d));
+      .then((d) => setQueue(d))
+      .catch((err) => showNotification("error", `Erro ao carregar fila: ${err.message}`));
 
     fetch("/api/admin/schedule")
       .then((r) => r.json())
-      .then((d) => setSchedule(d));
+      .then((d) => setSchedule(d))
+      .catch((err) => showNotification("error", `Erro ao carregar horários: ${err.message}`));
 
     fetch(`/api/admin/blocked-days?pin=${activePin}`)
       .then((r) => r.json())
-      .then((d) => setBlockedDays(Array.isArray(d) ? d : []));
+      .then((d) => setBlockedDays(Array.isArray(d) ? d : []))
+      .catch((err) => showNotification("error", `Erro ao carregar bloqueios: ${err.message}`));
 
     loadAppointments(activePin, agendaDate);
   };
@@ -113,7 +136,8 @@ export default function AdminPage() {
     const query = date ? `?pin=${activePin}&date=${date}` : `?pin=${activePin}`;
     fetch(`/api/admin/appointments${query}`)
       .then((r) => r.json())
-      .then((d) => setAppointments(Array.isArray(d) ? d : []));
+      .then((d) => setAppointments(Array.isArray(d) ? d : []))
+      .catch((err) => showNotification("error", `Erro ao carregar agenda: ${err.message}`));
   };
 
   useEffect(() => {
@@ -124,6 +148,11 @@ export default function AdminPage() {
 
   // CONTROLE DA FILA (+, -, ZERAR, SET)
   const handleQueueAction = async (action: "increment" | "decrement" | "reset" | "set", value?: number) => {
+    // Feedback háptico tátil no celular se disponível
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate?.(25);
+    }
+
     try {
       const res = await fetch("/api/queue", {
         method: "POST",
@@ -133,9 +162,11 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok) {
         setQueue(data);
+      } else {
+        showNotification("error", `Erro: ${data.error || "Não foi possível atualizar a fila"}`);
       }
-    } catch (err) {
-      console.error("Erro ao atualizar fila:", err);
+    } catch (err: any) {
+      showNotification("error", `Erro: ${err.message || "Falha de conexão"}`);
     }
   };
 
@@ -164,17 +195,15 @@ export default function AdminPage() {
         } else {
           setProfile((prev) => (prev ? { ...prev, bannerUrl: data.url } : prev));
         }
-        setSaveSuccess(type === "avatar" ? "Foto de perfil atualizada!" : "Banner atualizado!");
-        setTimeout(() => setSaveSuccess(""), 4000);
+        showNotification("success", "Configuração Salva");
       } else {
-        alert(data.error || "Erro no upload.");
+        showNotification("error", `Erro: ${data.error || "Falha no envio da imagem"}`);
       }
-    } catch {
-      alert("Erro de conexão no upload da imagem.");
+    } catch (err: any) {
+      showNotification("error", `Erro: ${err.message || "Falha de conexão no upload"}`);
     } finally {
       if (type === "avatar") setUploadingAvatar(false);
       else setUploadingBanner(false);
-      // Limpa o input para permitir selecionar o mesmo arquivo novamente se desejar
       e.target.value = "";
     }
   };
@@ -194,12 +223,13 @@ export default function AdminPage() {
       if (res.ok) {
         setBlockedDays(data.blockedDays);
         setBlockReason("");
-        setSaveSuccess("Dia bloqueado e agendamentos cancelados!");
+        showNotification("success", "Configuração Salva");
         loadAppointments(pin, agendaDate);
-        setTimeout(() => setSaveSuccess(""), 4000);
+      } else {
+        showNotification("error", `Erro: ${data.error || "Não foi possível bloquear o dia"}`);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showNotification("error", `Erro: ${err.message || "Falha ao bloquear dia"}`);
     }
   };
 
@@ -214,11 +244,12 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok) {
         setBlockedDays(data.blockedDays);
-        setSaveSuccess("Dia desbloqueado com sucesso!");
-        setTimeout(() => setSaveSuccess(""), 4000);
+        showNotification("success", "Configuração Salva");
+      } else {
+        showNotification("error", `Erro: ${data.error || "Não foi possível desbloquear o dia"}`);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showNotification("error", `Erro: ${err.message || "Falha ao desbloquear"}`);
     }
   };
 
@@ -233,10 +264,31 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setAppointments((prev) => prev.filter((a) => a.id !== id));
+        showNotification("success", "Configuração Salva");
+      } else {
+        const data = await res.json();
+        showNotification("error", `Erro: ${data.error || "Não foi possível cancelar o agendamento"}`);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showNotification("error", `Erro: ${err.message || "Falha de comunicação"}`);
     }
+  };
+
+  // COMPARTILHAR AGENDA NO WHATSAPP
+  const handleShareAgenda = () => {
+    if (!appointments.length) {
+      showNotification("error", "Erro: Não há agendamentos nesta data para compartilhar.");
+      return;
+    }
+    const [year, month, day] = agendaDate.split("-");
+    let text = `💈 *Agenda Barbearia - ${day}/${month}/${year}*\n\n`;
+    [...appointments]
+      .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot))
+      .forEach((apt) => {
+        text += `✂️ ${apt.timeSlot} - ${apt.clientName}\n`;
+      });
+    text += `\n_Total: ${appointments.length} pessoas agendadas_`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   // ATUALIZAR CONFIGURAÇÃO DE UM DIA DA SEMANA
@@ -257,12 +309,14 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...schedule, pin }),
       });
+      const data = await res.json();
       if (res.ok) {
-        setSaveSuccess("Horários de Segunda a Domingo atualizados!");
-        setTimeout(() => setSaveSuccess(""), 4000);
+        showNotification("success", "Configuração Salva");
+      } else {
+        showNotification("error", `Erro: ${data.error || "Não foi possível salvar os horários"}`);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showNotification("error", `Erro: ${err.message || "Falha ao salvar horários"}`);
     }
   };
 
@@ -277,12 +331,14 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...profile, pin }),
       });
+      const data = await res.json();
       if (res.ok) {
-        setSaveSuccess("Perfil, redes e cores atualizados!");
-        setTimeout(() => setSaveSuccess(""), 4000);
+        showNotification("success", "Configuração Salva");
+      } else {
+        showNotification("error", `Erro: ${data.error || "Não foi possível salvar o perfil"}`);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showNotification("error", `Erro: ${err.message || "Falha ao salvar perfil"}`);
     }
   };
 
@@ -367,14 +423,35 @@ export default function AdminPage() {
         </span>
       </div>
 
-      <div className="px-5 py-6 space-y-7">
-        {saveSuccess && (
-          <div className="p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
-            <Check className="w-4 h-4 flex-shrink-0" />
-            {saveSuccess}
+      {/* NOTIFICAÇÃO PADRONIZADA (CONFIGURAÇÃO SALVA / ERRO) */}
+      {notification && (
+        <div className="sticky top-14 z-50 px-5 pt-3 animate-in fade-in slide-in-from-top-2">
+          <div
+            className={`p-3.5 rounded-xl border flex items-center justify-between shadow-2xl text-xs font-bold ${
+              notification.type === "success"
+                ? "bg-emerald-950/95 border-emerald-500/70 text-emerald-200"
+                : "bg-rose-950/95 border-rose-500/70 text-rose-200"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {notification.type === "success" ? (
+                <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+              )}
+              <span>{notification.message}</span>
+            </div>
+            <button
+              onClick={() => setNotification(null)}
+              className="p-1 rounded hover:bg-black/30 transition text-neutral-400 hover:text-white"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
+      <div className="px-5 py-5 space-y-6">
         {/* ==================================================== */}
         {/* 1. CONTROLE INSTANTÂNEO DA FILA AO VIVO (+, -, ZERAR) */}
         {/* ==================================================== */}
@@ -436,12 +513,23 @@ export default function AdminPage() {
               <Calendar className="w-4 h-4 text-gold" />
               Agenda do Dia
             </h3>
-            <input
-              type="date"
-              value={agendaDate}
-              onChange={(e) => setAgendaDate(e.target.value)}
-              className="bg-neutral-900 border border-neutral-700 text-white rounded-xl py-1.5 px-3 text-xs focus:border-gold focus:outline-none"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={agendaDate}
+                onChange={(e) => setAgendaDate(e.target.value)}
+                className="bg-neutral-900 border border-neutral-700 text-white rounded-xl py-1.5 px-3 text-xs focus:border-gold focus:outline-none"
+              />
+              {appointments.length > 0 && (
+                <button
+                  onClick={handleShareAgenda}
+                  title="Compartilhar no WhatsApp"
+                  className="p-2 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 active:scale-95 transition"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           {appointments.length === 0 ? (
@@ -554,313 +642,359 @@ export default function AdminPage() {
         </section>
 
         {/* ==================================================== */}
-        {/* 4. HORÁRIOS DE ATENDIMENTO (SEGUNDA A DOMINGO)       */}
+        {/* 4. SEÇÃO EXPANSÍVEL (DROPDOWN): HORÁRIOS DE ATENDIMENTO */}
         {/* ==================================================== */}
         {schedule && (
-          <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white font-bold text-sm">
-                <Clock className="w-4 h-4 text-gold" />
-                Horário de Atendimento Semanal
+          <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 overflow-hidden transition-all shadow-md">
+            {/* Header clicável do Dropdown */}
+            <button
+              type="button"
+              onClick={() => setIsScheduleOpen(!isScheduleOpen)}
+              className="w-full p-5 flex items-center justify-between text-left hover:bg-neutral-800/40 transition active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center text-gold">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Horário de Atendimento</h3>
+                  <p className="text-[11px] text-neutral-400">
+                    Segunda a Domingo com intervalo de almoço
+                  </p>
+                </div>
               </div>
-            </div>
+              <ChevronDown
+                className={`w-5 h-5 text-gold transition-transform duration-300 ${
+                  isScheduleOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Configure abertura, fechamento e o <strong>horário de almoço</strong> para cada dia. Deixe o almoço vazio caso não faça pausa.
-            </p>
+            {/* Conteúdo Expansível */}
+            {isScheduleOpen && (
+              <div className="p-5 pt-1 border-t border-neutral-800 space-y-4 animate-in fade-in slide-in-from-top-2">
+                <p className="text-xs text-neutral-400 leading-relaxed">
+                  Configure abertura, fechamento e o <strong>horário de almoço</strong> para cada dia. Deixe o almoço vazio caso não faça pausa.
+                </p>
 
-            <form onSubmit={handleSaveSchedule} className="space-y-4">
-              <div className="space-y-3">
-                {getOrderedDays().map((dayConfig) => (
-                  <div
-                    key={dayConfig.dayOfWeek}
-                    className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800/90 space-y-3"
-                  >
-                    {/* Header do Dia com Toggle Aberto/Fechado */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white tracking-wide">
-                        {dayConfig.dayName}
-                      </span>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <span className={`text-[11px] font-semibold ${dayConfig.isOpen ? "text-emerald-400" : "text-neutral-500"}`}>
-                          {dayConfig.isOpen ? "Aberto" : "Fechado"}
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={dayConfig.isOpen}
-                          onChange={(e) =>
-                            updateDaySchedule(dayConfig.dayOfWeek, { isOpen: e.target.checked })
-                          }
-                          className="w-4 h-4 accent-gold cursor-pointer"
-                        />
-                      </label>
-                    </div>
-
-                    {dayConfig.isOpen && (
-                      <div className="space-y-2.5 pt-1 border-t border-neutral-900">
-                        {/* Abertura e Fechamento */}
-                        <div className="grid grid-cols-2 gap-2.5">
-                          <div className="space-y-1">
-                            <label className="text-[10px] text-neutral-400 uppercase font-semibold">
-                              Abertura
-                            </label>
+                <form onSubmit={handleSaveSchedule} className="space-y-4">
+                  <div className="space-y-3">
+                    {getOrderedDays().map((dayConfig) => (
+                      <div
+                        key={dayConfig.dayOfWeek}
+                        className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800/90 space-y-3"
+                      >
+                        {/* Header do Dia com Toggle Aberto/Fechado */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white tracking-wide">
+                            {dayConfig.dayName}
+                          </span>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <span className={`text-[11px] font-semibold ${dayConfig.isOpen ? "text-emerald-400" : "text-neutral-500"}`}>
+                              {dayConfig.isOpen ? "Aberto" : "Fechado"}
+                            </span>
                             <input
-                              type="time"
-                              value={dayConfig.openTime}
+                              type="checkbox"
+                              checked={dayConfig.isOpen}
                               onChange={(e) =>
-                                updateDaySchedule(dayConfig.dayOfWeek, { openTime: e.target.value })
+                                updateDaySchedule(dayConfig.dayOfWeek, { isOpen: e.target.checked })
                               }
-                              className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold"
+                              className="w-4 h-4 accent-gold cursor-pointer"
                             />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] text-neutral-400 uppercase font-semibold">
-                              Fechamento
-                            </label>
-                            <input
-                              type="time"
-                              value={dayConfig.closeTime}
-                              onChange={(e) =>
-                                updateDaySchedule(dayConfig.dayOfWeek, { closeTime: e.target.value })
-                              }
-                              className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold"
-                            />
-                          </div>
+                          </label>
                         </div>
 
-                        {/* Intervalo de Almoço Opcional */}
-                        <div className="rounded-lg bg-neutral-900/60 p-2.5 space-y-2 border border-neutral-800">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-300">
-                              <Coffee className="w-3.5 h-3.5 text-gold" />
-                              <span>Horário de Almoço (opcional)</span>
+                        {dayConfig.isOpen && (
+                          <div className="space-y-2.5 pt-1 border-t border-neutral-900">
+                            {/* Abertura e Fechamento */}
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div className="space-y-1">
+                                <label className="text-[10px] text-neutral-400 uppercase font-semibold">
+                                  Abertura
+                                </label>
+                                <input
+                                  type="time"
+                                  value={dayConfig.openTime}
+                                  onChange={(e) =>
+                                    updateDaySchedule(dayConfig.dayOfWeek, { openTime: e.target.value })
+                                  }
+                                  className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] text-neutral-400 uppercase font-semibold">
+                                  Fechamento
+                                </label>
+                                <input
+                                  type="time"
+                                  value={dayConfig.closeTime}
+                                  onChange={(e) =>
+                                    updateDaySchedule(dayConfig.dayOfWeek, { closeTime: e.target.value })
+                                  }
+                                  className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold"
+                                />
+                              </div>
                             </div>
-                            {(dayConfig.lunchStart || dayConfig.lunchEnd) && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateDaySchedule(dayConfig.dayOfWeek, { lunchStart: "", lunchEnd: "" })
-                                }
-                                className="text-[10px] text-neutral-400 hover:text-amber-400 underline"
-                              >
-                                Limpar (Sem almoço)
-                              </button>
-                            )}
-                          </div>
 
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-0.5">
-                              <span className="text-[9px] text-neutral-500">Início do Almoço</span>
-                              <input
-                                type="time"
-                                value={dayConfig.lunchStart || ""}
-                                onChange={(e) =>
-                                  updateDaySchedule(dayConfig.dayOfWeek, { lunchStart: e.target.value })
-                                }
-                                placeholder="--:--"
-                                className="w-full bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold"
-                              />
-                            </div>
-                            <div className="space-y-0.5">
-                              <span className="text-[9px] text-neutral-500">Fim do Almoço</span>
-                              <input
-                                type="time"
-                                value={dayConfig.lunchEnd || ""}
-                                onChange={(e) =>
-                                  updateDaySchedule(dayConfig.dayOfWeek, { lunchEnd: e.target.value })
-                                }
-                                placeholder="--:--"
-                                className="w-full bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold"
-                              />
+                            {/* Intervalo de Almoço Opcional */}
+                            <div className="rounded-lg bg-neutral-900/60 p-2.5 space-y-2 border border-neutral-800">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-300">
+                                  <Coffee className="w-3.5 h-3.5 text-gold" />
+                                  <span>Horário de Almoço (opcional)</span>
+                                </div>
+                                {(dayConfig.lunchStart || dayConfig.lunchEnd) && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateDaySchedule(dayConfig.dayOfWeek, { lunchStart: "", lunchEnd: "" })
+                                    }
+                                    className="text-[10px] text-neutral-400 hover:text-amber-400 underline"
+                                  >
+                                    Limpar (Sem almoço)
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-0.5">
+                                  <span className="text-[9px] text-neutral-500">Início do Almoço</span>
+                                  <input
+                                    type="time"
+                                    value={dayConfig.lunchStart || ""}
+                                    onChange={(e) =>
+                                      updateDaySchedule(dayConfig.dayOfWeek, { lunchStart: e.target.value })
+                                    }
+                                    placeholder="--:--"
+                                    className="w-full bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold"
+                                  />
+                                </div>
+                                <div className="space-y-0.5">
+                                  <span className="text-[9px] text-neutral-500">Fim do Almoço</span>
+                                  <input
+                                    type="time"
+                                    value={dayConfig.lunchEnd || ""}
+                                    onChange={(e) =>
+                                      updateDaySchedule(dayConfig.dayOfWeek, { lunchEnd: e.target.value })
+                                    }
+                                    placeholder="--:--"
+                                    className="w-full bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold"
+                                  />
+                                </div>
+                              </div>
+                              {!dayConfig.lunchStart && !dayConfig.lunchEnd && (
+                                <p className="text-[10px] text-neutral-500 italic">
+                                  Sem pausa: todos os horários entre abertura e fechamento estarão livres.
+                                </p>
+                              )}
                             </div>
                           </div>
-                          {!dayConfig.lunchStart && !dayConfig.lunchEnd && (
-                            <p className="text-[10px] text-neutral-500 italic">
-                              Sem pausa: todos os horários entre abertura e fechamento estarão livres.
-                            </p>
-                          )}
-                        </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-gold hover:bg-yellow-400 text-black font-extrabold text-xs shadow-glow transition active:scale-95 flex items-center justify-center gap-1.5"
-              >
-                <Save className="w-4 h-4" />
-                Salvar Horários da Semana
-              </button>
-            </form>
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl bg-gold hover:bg-yellow-400 text-black font-extrabold text-xs shadow-glow transition active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    Salvar Horários da Semana
+                  </button>
+                </form>
+              </div>
+            )}
           </section>
         )}
 
         {/* ==================================================== */}
-        {/* 5. PERSONALIZAÇÃO DE PERFIL, FOTOS, REDES E CORES    */}
+        {/* 5. SEÇÃO EXPANSÍVEL (DROPDOWN): PERFIL, FOTOS E CORES */}
         {/* ==================================================== */}
         {profile && (
-          <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 p-5 space-y-5">
-            <div className="flex items-center gap-2 text-white font-bold text-sm">
-              <Palette className="w-4 h-4 text-gold" />
-              Personalização de Perfil & Fotos
-            </div>
-
-            {/* SEÇÃO DE UPLOAD DIRETO DE IMAGENS (SOBRESCRITA) */}
-            <div className="space-y-4 p-4 rounded-xl bg-neutral-950 border border-neutral-800">
-              <span className="text-xs font-bold text-gold flex items-center gap-1.5">
-                <Upload className="w-4 h-4" />
-                Upload Direto de Fotos
-              </span>
-
-              {/* Upload da Foto de Perfil Redonda */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-semibold text-neutral-300">
-                  Foto de Perfil Redonda
-                </label>
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gold shadow-glow flex-shrink-0 bg-neutral-900">
-                    <img
-                      src={profile.avatarUrl}
-                      alt="Avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95">
-                      <Upload className="w-3.5 h-3.5 text-gold" />
-                      {uploadingAvatar ? "Enviando..." : "Escolher Foto de Perfil"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        disabled={uploadingAvatar}
-                        onChange={(e) => handleFileUpload(e, "avatar")}
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="text-[10px] text-neutral-500">
-                      A nova foto substitui a anterior automaticamente.
-                    </p>
-                  </div>
+          <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 overflow-hidden transition-all shadow-md">
+            {/* Header clicável do Dropdown */}
+            <button
+              type="button"
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="w-full p-5 flex items-center justify-between text-left hover:bg-neutral-800/40 transition active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center text-gold">
+                  <Palette className="w-5 h-5" />
                 </div>
-              </div>
-
-              {/* Upload da Imagem de Banner */}
-              <div className="space-y-2 pt-2 border-t border-neutral-900">
-                <label className="text-[11px] font-semibold text-neutral-300">
-                  Imagem do Banner de Fundo
-                </label>
-                <div className="space-y-2">
-                  <div className="w-full h-20 rounded-xl overflow-hidden border border-neutral-700 bg-neutral-900">
-                    <img
-                      src={profile.bannerUrl}
-                      alt="Banner"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95">
-                    <ImageIcon className="w-3.5 h-3.5 text-gold" />
-                    {uploadingBanner ? "Enviando..." : "Escolher Novo Banner"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      disabled={uploadingBanner}
-                      onChange={(e) => handleFileUpload(e, "banner")}
-                      className="hidden"
-                    />
-                  </label>
-                  <p className="text-[10px] text-neutral-500">
-                    O novo banner substitui o anterior automaticamente.
+                <div>
+                  <h3 className="text-sm font-bold text-white">Personalização do Perfil</h3>
+                  <p className="text-[11px] text-neutral-400">
+                    Fotos, Bio, WhatsApp, Instagram e Cores
                   </p>
                 </div>
               </div>
-            </div>
+              <ChevronDown
+                className={`w-5 h-5 text-gold transition-transform duration-300 ${
+                  isProfileOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-            {/* FORMULÁRIO DE DADOS GERAIS (NOME, BIO, REDES E CORES) */}
-            <form onSubmit={handleSaveProfile} className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-[11px] text-neutral-400">Nome da Barbearia</label>
-                <input
-                  type="text"
-                  value={profile.name}
-                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
-                />
-              </div>
+            {/* Conteúdo Expansível */}
+            {isProfileOpen && (
+              <div className="p-5 pt-1 border-t border-neutral-800 space-y-5 animate-in fade-in slide-in-from-top-2">
+                {/* SEÇÃO DE UPLOAD DIRETO DE IMAGENS (SOBRESCRITA) */}
+                <div className="space-y-4 p-4 rounded-xl bg-neutral-950 border border-neutral-800">
+                  <span className="text-xs font-bold text-gold flex items-center gap-1.5">
+                    <Upload className="w-4 h-4" />
+                    Upload Direto de Fotos
+                  </span>
 
-              <div className="space-y-1">
-                <label className="text-[11px] text-neutral-400">Bio Aberta</label>
-                <textarea
-                  rows={2}
-                  value={profile.bio}
-                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl p-3 text-xs focus:border-gold"
-                />
-              </div>
+                  {/* Upload da Foto de Perfil Redonda */}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-semibold text-neutral-300">
+                      Foto de Perfil Redonda
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gold shadow-glow flex-shrink-0 bg-neutral-900">
+                        <img
+                          src={profile.avatarUrl}
+                          alt="Avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95">
+                          <Upload className="w-3.5 h-3.5 text-gold" />
+                          {uploadingAvatar ? "Enviando..." : "Escolher Foto de Perfil"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            disabled={uploadingAvatar}
+                            onChange={(e) => handleFileUpload(e, "avatar")}
+                            className="hidden"
+                          />
+                        </label>
+                        <p className="text-[10px] text-neutral-500">
+                          A nova foto substitui a anterior automaticamente.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] text-neutral-400">WhatsApp (apenas números)</label>
-                  <input
-                    type="text"
-                    value={profile.whatsappNumber}
-                    onChange={(e) => setProfile({ ...profile, whatsappNumber: e.target.value })}
-                    className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] text-neutral-400">Instagram URL</label>
-                  <input
-                    type="url"
-                    value={profile.instagramUrl}
-                    onChange={(e) => setProfile({ ...profile, instagramUrl: e.target.value })}
-                    className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
-                  />
-                </div>
-              </div>
-
-              {/* SELETORES DE CORES */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="space-y-1">
-                  <label className="text-[11px] text-neutral-400">Cor Principal (Fundo)</label>
-                  <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl p-1.5">
-                    <input
-                      type="color"
-                      value={profile.primaryColor}
-                      onChange={(e) => setProfile({ ...profile, primaryColor: e.target.value })}
-                      className="w-7 h-7 rounded cursor-pointer bg-transparent border-0"
-                    />
-                    <span className="text-xs text-neutral-300 uppercase font-mono">
-                      {profile.primaryColor}
-                    </span>
+                  {/* Upload da Imagem de Banner */}
+                  <div className="space-y-2 pt-2 border-t border-neutral-900">
+                    <label className="text-[11px] font-semibold text-neutral-300">
+                      Imagem do Banner de Fundo
+                    </label>
+                    <div className="space-y-2">
+                      <div className="w-full h-20 rounded-xl overflow-hidden border border-neutral-700 bg-neutral-900">
+                        <img
+                          src={profile.bannerUrl}
+                          alt="Banner"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95">
+                        <ImageIcon className="w-3.5 h-3.5 text-gold" />
+                        {uploadingBanner ? "Enviando..." : "Escolher Novo Banner"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingBanner}
+                          onChange={(e) => handleFileUpload(e, "banner")}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-[10px] text-neutral-500">
+                        O novo banner substitui o anterior automaticamente.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-[11px] text-neutral-400">Cor Secundária (Destaque)</label>
-                  <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl p-1.5">
+                {/* FORMULÁRIO DE DADOS GERAIS (NOME, BIO, REDES E CORES) */}
+                <form onSubmit={handleSaveProfile} className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-neutral-400">Nome da Barbearia</label>
                     <input
-                      type="color"
-                      value={profile.secondaryColor}
-                      onChange={(e) => setProfile({ ...profile, secondaryColor: e.target.value })}
-                      className="w-7 h-7 rounded cursor-pointer bg-transparent border-0"
+                      type="text"
+                      value={profile.name}
+                      onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                      className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
                     />
-                    <span className="text-xs text-neutral-300 uppercase font-mono">
-                      {profile.secondaryColor}
-                    </span>
                   </div>
-                </div>
-              </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 px-4 rounded-xl bg-gold hover:bg-yellow-400 text-black font-extrabold text-xs shadow-glow transition active:scale-95 flex items-center justify-center gap-1.5 mt-2"
-              >
-                <Save className="w-4 h-4" />
-                Salvar Perfil e Cores
-              </button>
-            </form>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-neutral-400">Bio Aberta</label>
+                    <textarea
+                      rows={2}
+                      value={profile.bio}
+                      onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                      className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl p-3 text-xs focus:border-gold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-neutral-400">WhatsApp (apenas números)</label>
+                      <input
+                        type="text"
+                        value={profile.whatsappNumber}
+                        onChange={(e) => setProfile({ ...profile, whatsappNumber: e.target.value })}
+                        className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-neutral-400">Instagram URL</label>
+                      <input
+                        type="url"
+                        value={profile.instagramUrl}
+                        onChange={(e) => setProfile({ ...profile, instagramUrl: e.target.value })}
+                        className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
+                      />
+                    </div>
+                  </div>
+
+                  {/* SELETORES DE CORES */}
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-neutral-400">Cor Principal (Fundo)</label>
+                      <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl p-1.5">
+                        <input
+                          type="color"
+                          value={profile.primaryColor}
+                          onChange={(e) => setProfile({ ...profile, primaryColor: e.target.value })}
+                          className="w-7 h-7 rounded cursor-pointer bg-transparent border-0"
+                        />
+                        <span className="text-xs text-neutral-300 uppercase font-mono">
+                          {profile.primaryColor}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-neutral-400">Cor Secundária (Destaque)</label>
+                      <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl p-1.5">
+                        <input
+                          type="color"
+                          value={profile.secondaryColor}
+                          onChange={(e) => setProfile({ ...profile, secondaryColor: e.target.value })}
+                          className="w-7 h-7 rounded cursor-pointer bg-transparent border-0"
+                        />
+                        <span className="text-xs text-neutral-300 uppercase font-mono">
+                          {profile.secondaryColor}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 px-4 rounded-xl bg-gold hover:bg-yellow-400 text-black font-extrabold text-xs shadow-glow transition active:scale-95 flex items-center justify-center gap-1.5 mt-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    Salvar Perfil e Cores
+                  </button>
+                </form>
+              </div>
+            )}
           </section>
         )}
       </div>

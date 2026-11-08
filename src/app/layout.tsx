@@ -4,6 +4,16 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Barbearia | Agendamento & Fila ao Vivo",
   description: "Acompanhe a fila em tempo real e escolha seu horário. Ordem de chegada com máxima comodidade.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Barbearia",
+  },
 };
 
 export const viewport: Viewport = {

@@ -16,8 +16,8 @@
       "isOpen": true,
       "openTime": "09:00",
       "closeTime": "19:00",
-      "lunchStart": "12:00",
-      "lunchEnd": "13:00"
+      "lunchStart": "13:00",
+      "lunchEnd": "15:00"
     },
     {
       "dayOfWeek": 3,
@@ -25,8 +25,8 @@
       "isOpen": true,
       "openTime": "09:00",
       "closeTime": "19:00",
-      "lunchStart": "12:00",
-      "lunchEnd": "13:00"
+      "lunchStart": "13:00",
+      "lunchEnd": "15:00"
     },
     {
       "dayOfWeek": 4,
@@ -34,8 +34,8 @@
       "isOpen": true,
       "openTime": "09:00",
       "closeTime": "19:00",
-      "lunchStart": "12:00",
-      "lunchEnd": "13:00"
+      "lunchStart": "13:00",
+      "lunchEnd": "15:00"
     },
     {
       "dayOfWeek": 5,
@@ -43,15 +43,15 @@
       "isOpen": true,
       "openTime": "09:00",
       "closeTime": "19:00",
-      "lunchStart": "12:00",
-      "lunchEnd": "13:00"
+      "lunchStart": "13:00",
+      "lunchEnd": "15:00"
     },
     {
       "dayOfWeek": 6,
       "dayName": "Sábado",
       "isOpen": true,
-      "openTime": "08:00",
-      "closeTime": "18:00",
+      "openTime": "09:00",
+      "closeTime": "14:00",
       "lunchStart": "",
       "lunchEnd": ""
     },
