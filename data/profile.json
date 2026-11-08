@@ -1,11 +1,11 @@
 {
   "name": "Barbearia Modelo",
-  "bio": "Cortes clássicos e modernos, barba na navalha e muito mais. Atendimento acolhedor e de excelência.\nTambém com atendimento domiciliar via Whatsapp",
-  "avatarUrl": "/uploads/avatar.jpeg?t=1794159079474",
+  "bio": "Cortes clássicos e modernos, barba na navalha e atendimento acolhedor. Agende seu horário ou acompanhe a fila ao vivo!",
+  "avatarUrl": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=400&q=80",
   "bannerUrl": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=80",
   "whatsappNumber": "5511999999999",
-  "instagramUrl": "https://www.instagram.com/barbearia/",
-  "primaryColor": "#000000",
-  "secondaryColor": "#FFD700",
+  "instagramUrl": "https://instagram.com",
+  "primaryColor": "#121212",
+  "secondaryColor": "#D4AF37",
   "adminPin": "1234"
 }
