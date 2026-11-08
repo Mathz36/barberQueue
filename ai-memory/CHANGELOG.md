@@ -4,6 +4,17 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.3.1] - 2026-11-08
+
+### Card Ao Vivo Inteligente (Status de Almoço e Fechamento)
+- **Commit:** `feat: display closed and lunch status on client live queue card`
+  - Implementação de `getLiveBarberStatus()` em [`src/lib/storage.ts`](src/lib/storage.ts) com fuso horário `America/Sao_Paulo`.
+  - Exibição de card âmbar com aviso de retorno durante o horário de almoço (`Fechada para Almoço - Retorno previsto às HH:MM`).
+  - Exibição de status de fechamento antes de abrir, após fechar, em dias de folga (ex: Domingo) ou dias bloqueados/feriados.
+  - Testes automatizados cobrindo todos os cenários em [`tests/live-status.test.ts`](tests/live-status.test.ts) (29 testes verdes).
+
+---
+
 ## [1.3.0] - 2026-11-08
 
 ### Migração para Supabase e Cron Keep-Alive na Vercel

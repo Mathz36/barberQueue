@@ -10,9 +10,20 @@ export interface BarberProfile {
   adminPin: string;
 }
 
+export interface LiveBarberStatus {
+  isOpenNow: boolean;
+  statusType: "open" | "lunch" | "closed" | "blocked" | "day_off";
+  statusTitle: string;
+  statusMessage: string;
+  openTime?: string;
+  closeTime?: string;
+  lunchReturnTime?: string;
+}
+
 export interface LiveQueue {
   count: number;
   updatedAt: string;
+  liveStatus?: LiveBarberStatus;
 }
 
 export interface DayScheduleConfig {

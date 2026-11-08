@@ -9,6 +9,7 @@ import {
   Appointment,
   DayStatus,
   TimeSlotStatus,
+  LiveBarberStatus,
 } from "@/types";
 import { getSupabaseAdmin, isSupabaseConfigured } from "./supabase";
 
@@ -184,8 +185,108 @@ const DEFAULT_QUEUE: LiveQueue = {
   updatedAt: new Date().toISOString(),
 };
 
+export async function getLiveBarberStatus(referenceDate: Date = new Date()): Promise<LiveBarberStatus> {
+  const schedule = await getSchedule();
+  const blockedDays = await getBlockedDays();
+
+  // Fuso horário oficial do Brasil (America/Sao_Paulo, UTC-3)
+  const spDateStr = referenceDate.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }); // YYYY-MM-DD
+  const spTimeStr = referenceDate.toLocaleTimeString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }); // HH:MM
+
+  // 1. Checa se a data está bloqueada (folga ou feriado)
+  const blocked = blockedDays.find((b) => b.date === spDateStr);
+  if (blocked) {
+    return {
+      isOpenNow: false,
+      statusType: "blocked",
+      statusTitle: "Barbearia Fechada Hoje",
+      statusMessage: blocked.reason || "Não haverá atendimento presencial hoje.",
+    };
+  }
+
+  // 2. Identifica o dia da semana atual em São Paulo (0=Domingo, 1=Segunda, etc.)
+  const [year, month, day] = spDateStr.split("-").map(Number);
+  const targetDate = new Date(year, month - 1, day);
+  const dayOfWeek = targetDate.getDay();
+
+  const dayConfig = schedule.days?.find((d) => d.dayOfWeek === dayOfWeek);
+
+  // Se o dia não abre (ex: Domingo)
+  if (!dayConfig || !dayConfig.isOpen) {
+    return {
+      isOpenNow: false,
+      statusType: "day_off",
+      statusTitle: "Fechada Hoje",
+      statusMessage: "A barbearia não abre neste dia da semana.",
+    };
+  }
+
+  const openTime = dayConfig.openTime || "09:00";
+  const closeTime = dayConfig.closeTime || "19:00";
+
+  // 3. Fora do expediente (antes de abrir ou após o encerramento)
+  if (spTimeStr < openTime) {
+    return {
+      isOpenNow: false,
+      statusType: "closed",
+      statusTitle: "Fechada no Momento",
+      statusMessage: `Abrimos hoje às ${openTime}.`,
+      openTime,
+      closeTime,
+    };
+  }
+
+  if (spTimeStr >= closeTime) {
+    return {
+      isOpenNow: false,
+      statusType: "closed",
+      statusTitle: "Fechada no Momento",
+      statusMessage: "Encerramos o expediente de hoje.",
+      openTime,
+      closeTime,
+    };
+  }
+
+  // 4. Horário de almoço (se configurado)
+  const hasLunch = Boolean(dayConfig.lunchStart?.trim() && dayConfig.lunchEnd?.trim());
+  if (hasLunch && dayConfig.lunchStart && dayConfig.lunchEnd) {
+    if (spTimeStr >= dayConfig.lunchStart && spTimeStr < dayConfig.lunchEnd) {
+      return {
+        isOpenNow: false,
+        statusType: "lunch",
+        statusTitle: "Fechada para Almoço",
+        statusMessage: `Intervalo de almoço. Retorno previsto às ${dayConfig.lunchEnd}.`,
+        openTime,
+        closeTime,
+        lunchReturnTime: dayConfig.lunchEnd,
+      };
+    }
+  }
+
+  // 5. Aberta e operando no momento
+  return {
+    isOpenNow: true,
+    statusType: "open",
+    statusTitle: "Ao Vivo na Barbearia",
+    statusMessage: `Aberta até às ${closeTime}.`,
+    openTime,
+    closeTime,
+  };
+}
+
 export async function getQueue(): Promise<LiveQueue> {
-  return readJson<LiveQueue>(QUEUE_FILE, DEFAULT_QUEUE);
+  const queue = await readJson<LiveQueue>(QUEUE_FILE, DEFAULT_QUEUE);
+  const liveStatus = await getLiveBarberStatus();
+  return {
+    count: queue.count,
+    updatedAt: queue.updatedAt,
+    liveStatus,
+  };
 }
 
 export async function adjustQueue(

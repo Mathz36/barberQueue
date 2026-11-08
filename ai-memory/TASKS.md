@@ -22,6 +22,7 @@ Este arquivo é gerenciado pelo **Planner Agent** e organiza a divisão de traba
 | **TSK-025** | Frontend | Transição fluida e suave na seleção de dias da semana e troca de slots no cliente | `DONE` | Sim | `feat: add fluid animation and smooth transition for day selection` |
 | **TSK-026** | Frontend | Rodapé de autoria com link do GitHub (`mathz36`) em layout global | `DONE` | Sim | `feat: add developer credits footer with github link` |
 | **TSK-027** | Backend / DevOps | Migração para Supabase, Bucket de imagens e Vercel Keep-Alive Cron | `DONE` | Sim | `feat: migrate storage to supabase with image bucket and vercel keep-alive cron` |
+| **TSK-028** | Frontend / Tester | Status inteligente de almoço e fechamento no card Ao Vivo do cliente | `DONE` | Sim | `feat: display closed and lunch status on client live queue card` |
 
 ---
 

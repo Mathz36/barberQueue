@@ -14,6 +14,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Coffee,
+  Moon,
+  Utensils,
+  DoorClosed,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/Icons";
 import { BarberProfile, LiveQueue, DayStatus, TimeSlotStatus } from "@/types";
@@ -264,34 +268,143 @@ export default function ClientPage() {
       {/* CONTEÚDO PRINCIPAL (MOBILE FIRST) */}
       <main className="px-5 mt-6 space-y-6 flex-1">
         
-        {/* 1. CARD DA FILA EM TEMPO REAL (DESTAQUE NO TOPO) */}
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 to-black border border-gold/30 p-5 shadow-glow">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+        {/* 1. CARD DA FILA EM TEMPO REAL (DESTAQUE NO TOPO COM STATUS OPERACIONAL) */}
+        {!queue.liveStatus || queue.liveStatus.isOpenNow ? (
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 to-black border border-gold/30 p-5 shadow-glow transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="relative flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                  Ao Vivo na Barbearia
+                </span>
+              </div>
+              <Users className="w-5 h-5 text-gold/80" />
+            </div>
+
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="text-4xl font-extrabold text-white tracking-tight">
+                {queue.count}
               </span>
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-                Ao Vivo na Barbearia
+              <span className="text-sm font-medium text-neutral-300">
+                {queue.count === 1 ? "pessoa na barbearia agora" : "pessoas na barbearia agora"}
               </span>
             </div>
-            <Users className="w-5 h-5 text-gold/80" />
-          </div>
 
-          <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-4xl font-extrabold text-white tracking-tight">
-              {queue.count}
-            </span>
-            <span className="text-sm font-medium text-neutral-300">
-              {queue.count === 1 ? "pessoa na barbearia agora" : "pessoas na barbearia agora"}
-            </span>
-          </div>
+            <p className="mt-2 text-xs text-neutral-400 leading-normal">
+              Trabalhamos na modalidade de <strong>ordem de chegada</strong>. Você pode passar agora ou marcar sua intenção de horário no calendário abaixo!
+            </p>
+          </section>
+        ) : queue.liveStatus.statusType === "lunch" ? (
+          /* CARD DE HORÁRIO DE ALMOÇO */
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-950/40 via-neutral-900 to-black border border-amber-500/50 p-5 shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="relative flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-500"></span>
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                  Horário de Almoço
+                </span>
+              </div>
+              <Utensils className="w-5 h-5 text-amber-400" />
+            </div>
 
-          <p className="mt-2 text-xs text-neutral-400 leading-normal">
-            Trabalhamos na modalidade de <strong>ordem de chegada</strong>. Você pode passar agora ou marcar sua intenção de horário no calendário abaixo!
-          </p>
-        </section>
+            <div className="mt-4 space-y-1">
+              <div className="text-2xl font-extrabold text-amber-200 tracking-tight">
+                Fechada para Almoço
+              </div>
+              <div className="text-xs font-medium text-amber-300/90">
+                Retorno previsto às {queue.liveStatus.lunchReturnTime || "breve"}
+              </div>
+            </div>
+
+            <p className="mt-2 text-xs text-neutral-400 leading-normal">
+              O barbeiro está em pausa para almoço. Você pode garantir seu horário para a tarde ou outros dias no calendário abaixo!
+            </p>
+          </section>
+        ) : queue.liveStatus.statusType === "blocked" ? (
+          /* CARD DE DIA BLOQUEADO (FOLGA/FERIADO) */
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900/90 to-black border border-amber-600/40 p-5 shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full bg-amber-500/80"></span>
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                  Barbearia Fechada Hoje
+                </span>
+              </div>
+              <DoorClosed className="w-5 h-5 text-amber-400" />
+            </div>
+
+            <div className="mt-4 space-y-1">
+              <div className="text-xl font-extrabold text-white tracking-tight">
+                {queue.liveStatus.statusMessage || "Não haverá atendimento hoje."}
+              </div>
+              <div className="text-xs text-neutral-400">
+                Sem atendimento presencial ou ordem de chegada nesta data.
+              </div>
+            </div>
+
+            <p className="mt-2 text-xs text-neutral-400 leading-normal">
+              Escolha uma data alternativa no calendário abaixo para garantir seu corte com antecedência!
+            </p>
+          </section>
+        ) : queue.liveStatus.statusType === "day_off" ? (
+          /* CARD DE DIA QUE NÃO ABRE (EX: DOMINGO) */
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900/90 to-black border border-neutral-800 p-5 shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full bg-neutral-600"></span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                  Dia de Descanso
+                </span>
+              </div>
+              <Moon className="w-5 h-5 text-neutral-400" />
+            </div>
+
+            <div className="mt-4 space-y-1">
+              <div className="text-2xl font-extrabold text-white tracking-tight">
+                Fechada Hoje
+              </div>
+              <div className="text-xs text-neutral-300">
+                A barbearia não abre neste dia da semana.
+              </div>
+            </div>
+
+            <p className="mt-2 text-xs text-neutral-400 leading-normal">
+              Hoje estamos recarregando as energias! Confira os próximos dias no calendário abaixo para agendar seu horário.
+            </p>
+          </section>
+        ) : (
+          /* CARD DE FORA DO EXPEDIENTE (FECHADA NO MOMENTO) */
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900/90 to-black border border-neutral-800 p-5 shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full bg-neutral-500"></span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                  Fora do Horário
+                </span>
+              </div>
+              <Clock className="w-5 h-5 text-gold/70" />
+            </div>
+
+            <div className="mt-4 space-y-1">
+              <div className="text-2xl font-extrabold text-white tracking-tight">
+                Fechada no Momento
+              </div>
+              <div className="text-xs text-neutral-300">
+                {queue.liveStatus.statusMessage}
+              </div>
+            </div>
+
+            <p className="mt-2 text-xs text-neutral-400 leading-normal">
+              Atendimento presencial fechado no momento. Você pode agendar seu horário com antecedência no calendário abaixo!
+            </p>
+          </section>
+        )}
 
         {/* 2. CALENDÁRIO & SELEÇÃO DE DIAS */}
         <section className="space-y-3">
