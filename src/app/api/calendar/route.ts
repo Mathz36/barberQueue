@@ -28,7 +28,8 @@ export async function GET(request: Request) {
         const dateStr = `${year}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
         const dayOfWeek = new Date(year, m - 1, d).getDay();
         const blocked = blockedDays.find((b) => b.date === dateStr);
-        const isOpenDay = schedule.activeDaysOfWeek.includes(dayOfWeek) && !blocked;
+        const dayConfig = schedule.days?.find((item) => item.dayOfWeek === dayOfWeek);
+        const isOpenDay = Boolean(dayConfig?.isOpen && !blocked);
         const count = allMonthAppointments.filter((a) => a.date === dateStr).length;
 
         days.push({

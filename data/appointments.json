@@ -7,17 +7,10 @@
     "createdAt": "2026-11-08T09:00:00.000Z"
   },
   {
-    "id": "apt_1794150649861_3c2vs",
-    "clientName": "João Barba",
-    "date": "2026-11-10",
-    "timeSlot": "10:00",
-    "createdAt": "2026-11-08T15:10:49.861Z"
-  },
-  {
-    "id": "apt_1794150649902_ca5io",
-    "clientName": "Marcelo Teste",
-    "date": "2026-11-18",
-    "timeSlot": "11:00",
-    "createdAt": "2026-11-08T15:10:49.902Z"
+    "id": "apt_current_2",
+    "clientName": "Cliente Semana Atual 2",
+    "date": "2026-11-12",
+    "timeSlot": "16:00",
+    "createdAt": "2026-11-08T10:00:00.000Z"
   }
 ]

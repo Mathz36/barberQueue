@@ -16,10 +16,12 @@ import {
   Trash2,
   Save,
   Check,
-  Settings,
+  Upload,
+  Coffee,
   X,
+  Image as ImageIcon,
 } from "lucide-react";
-import { BarberProfile, LiveQueue, Appointment, BlockedDay, BusinessSchedule } from "@/types";
+import { BarberProfile, LiveQueue, Appointment, BlockedDay, BusinessSchedule, DayScheduleConfig } from "@/types";
 import ThemeInjector from "@/components/ThemeInjector";
 
 export default function AdminPage() {
@@ -42,6 +44,10 @@ export default function AdminPage() {
   const [blockDate, setBlockDate] = useState<string>("");
   const [blockReason, setBlockReason] = useState<string>("");
 
+  // Estados de Upload
+  const [uploadingAvatar, setUploadingAvatar] = useState<boolean>(false);
+  const [uploadingBanner, setUploadingBanner] = useState<boolean>(false);
+
   // Feedbacks visuais
   const [saveSuccess, setSaveSuccess] = useState<string>("");
 
@@ -55,7 +61,6 @@ export default function AdminPage() {
     setAgendaDate(todayStr);
     setBlockDate(todayStr);
 
-    // Verifica se já há PIN salvo na sessão
     const savedPin = sessionStorage.getItem("barber_admin_pin");
     if (savedPin) {
       setPin(savedPin);
@@ -85,27 +90,22 @@ export default function AdminPage() {
   };
 
   const loadAllAdminData = async (activePin: string) => {
-    // Carrega Perfil
     fetch("/api/profile")
       .then((r) => r.json())
       .then((d) => setProfile(d));
 
-    // Carrega Fila
     fetch("/api/queue")
       .then((r) => r.json())
       .then((d) => setQueue(d));
 
-    // Carrega Horários
     fetch("/api/admin/schedule")
       .then((r) => r.json())
       .then((d) => setSchedule(d));
 
-    // Carrega Dias Bloqueados
     fetch(`/api/admin/blocked-days?pin=${activePin}`)
       .then((r) => r.json())
       .then((d) => setBlockedDays(Array.isArray(d) ? d : []));
 
-    // Carrega Agendamentos
     loadAppointments(activePin, agendaDate);
   };
 
@@ -136,6 +136,46 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error("Erro ao atualizar fila:", err);
+    }
+  };
+
+  // UPLOAD DE IMAGEM COM SOBRESCRITA
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "avatar" | "banner") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === "avatar") setUploadingAvatar(true);
+    else setUploadingBanner(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", type);
+    formData.append("pin", pin);
+
+    try {
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        if (type === "avatar") {
+          setProfile((prev) => (prev ? { ...prev, avatarUrl: data.url } : prev));
+        } else {
+          setProfile((prev) => (prev ? { ...prev, bannerUrl: data.url } : prev));
+        }
+        setSaveSuccess(type === "avatar" ? "Foto de perfil atualizada!" : "Banner atualizado!");
+        setTimeout(() => setSaveSuccess(""), 4000);
+      } else {
+        alert(data.error || "Erro no upload.");
+      }
+    } catch {
+      alert("Erro de conexão no upload da imagem.");
+    } finally {
+      if (type === "avatar") setUploadingAvatar(false);
+      else setUploadingBanner(false);
+      // Limpa o input para permitir selecionar o mesmo arquivo novamente se desejar
+      e.target.value = "";
     }
   };
 
@@ -199,6 +239,13 @@ export default function AdminPage() {
     }
   };
 
+  // ATUALIZAR CONFIGURAÇÃO DE UM DIA DA SEMANA
+  const updateDaySchedule = (dayOfWeek: number, patch: Partial<DayScheduleConfig>) => {
+    if (!schedule) return;
+    const updatedDays = schedule.days.map((d) => (d.dayOfWeek === dayOfWeek ? { ...d, ...patch } : d));
+    setSchedule({ ...schedule, days: updatedDays });
+  };
+
   // SALVAR HORÁRIOS DE ATENDIMENTO
   const handleSaveSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,7 +258,7 @@ export default function AdminPage() {
         body: JSON.stringify({ ...schedule, pin }),
       });
       if (res.ok) {
-        setSaveSuccess("Horários de funcionamento atualizados!");
+        setSaveSuccess("Horários de Segunda a Domingo atualizados!");
         setTimeout(() => setSaveSuccess(""), 4000);
       }
     } catch (err) {
@@ -237,6 +284,13 @@ export default function AdminPage() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Ordena os dias para exibição de Segunda a Domingo (1, 2, 3, 4, 5, 6, 0)
+  const getOrderedDays = (): DayScheduleConfig[] => {
+    if (!schedule?.days) return [];
+    const order = [1, 2, 3, 4, 5, 6, 0];
+    return [...schedule.days].sort((a, b) => order.indexOf(a.dayOfWeek) - order.indexOf(b.dayOfWeek));
   };
 
   // TELA 1: LOGIN POR PIN (SE NÃO AUTENTICADO)
@@ -474,7 +528,6 @@ export default function AdminPage() {
             </button>
           </form>
 
-          {/* Lista de Dias Já Bloqueados */}
           {blockedDays.length > 0 && (
             <div className="pt-3 border-t border-neutral-800 space-y-2">
               <span className="text-xs font-semibold text-neutral-400">Dias Fechados:</span>
@@ -501,66 +554,230 @@ export default function AdminPage() {
         </section>
 
         {/* ==================================================== */}
-        {/* 4. CONFIGURAÇÃO DE HORÁRIOS DE ATENDIMENTO          */}
+        {/* 4. HORÁRIOS DE ATENDIMENTO (SEGUNDA A DOMINGO)       */}
         {/* ==================================================== */}
         {schedule && (
           <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 p-5 space-y-4">
-            <div className="flex items-center gap-2 text-white font-bold text-sm">
-              <Clock className="w-4 h-4 text-gold" />
-              Horário de Atendimento
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                <Clock className="w-4 h-4 text-gold" />
+                Horário de Atendimento Semanal
+              </div>
             </div>
 
-            <form onSubmit={handleSaveSchedule} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] text-neutral-400">Abertura (hora)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={23}
-                    value={schedule.openHour}
-                    onChange={(e) =>
-                      setSchedule({ ...schedule, openHour: parseInt(e.target.value, 10) })
-                    }
-                    className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] text-neutral-400">Fechamento (hora)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={23}
-                    value={schedule.closeHour}
-                    onChange={(e) =>
-                      setSchedule({ ...schedule, closeHour: parseInt(e.target.value, 10) })
-                    }
-                    className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
-                  />
-                </div>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Configure abertura, fechamento e o <strong>horário de almoço</strong> para cada dia. Deixe o almoço vazio caso não faça pausa.
+            </p>
+
+            <form onSubmit={handleSaveSchedule} className="space-y-4">
+              <div className="space-y-3">
+                {getOrderedDays().map((dayConfig) => (
+                  <div
+                    key={dayConfig.dayOfWeek}
+                    className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800/90 space-y-3"
+                  >
+                    {/* Header do Dia com Toggle Aberto/Fechado */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white tracking-wide">
+                        {dayConfig.dayName}
+                      </span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <span className={`text-[11px] font-semibold ${dayConfig.isOpen ? "text-emerald-400" : "text-neutral-500"}`}>
+                          {dayConfig.isOpen ? "Aberto" : "Fechado"}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={dayConfig.isOpen}
+                          onChange={(e) =>
+                            updateDaySchedule(dayConfig.dayOfWeek, { isOpen: e.target.checked })
+                          }
+                          className="w-4 h-4 accent-gold cursor-pointer"
+                        />
+                      </label>
+                    </div>
+
+                    {dayConfig.isOpen && (
+                      <div className="space-y-2.5 pt-1 border-t border-neutral-900">
+                        {/* Abertura e Fechamento */}
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-neutral-400 uppercase font-semibold">
+                              Abertura
+                            </label>
+                            <input
+                              type="time"
+                              value={dayConfig.openTime}
+                              onChange={(e) =>
+                                updateDaySchedule(dayConfig.dayOfWeek, { openTime: e.target.value })
+                              }
+                              className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-neutral-400 uppercase font-semibold">
+                              Fechamento
+                            </label>
+                            <input
+                              type="time"
+                              value={dayConfig.closeTime}
+                              onChange={(e) =>
+                                updateDaySchedule(dayConfig.dayOfWeek, { closeTime: e.target.value })
+                              }
+                              className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Intervalo de Almoço Opcional */}
+                        <div className="rounded-lg bg-neutral-900/60 p-2.5 space-y-2 border border-neutral-800">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-300">
+                              <Coffee className="w-3.5 h-3.5 text-gold" />
+                              <span>Horário de Almoço (opcional)</span>
+                            </div>
+                            {(dayConfig.lunchStart || dayConfig.lunchEnd) && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateDaySchedule(dayConfig.dayOfWeek, { lunchStart: "", lunchEnd: "" })
+                                }
+                                className="text-[10px] text-neutral-400 hover:text-amber-400 underline"
+                              >
+                                Limpar (Sem almoço)
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-0.5">
+                              <span className="text-[9px] text-neutral-500">Início do Almoço</span>
+                              <input
+                                type="time"
+                                value={dayConfig.lunchStart || ""}
+                                onChange={(e) =>
+                                  updateDaySchedule(dayConfig.dayOfWeek, { lunchStart: e.target.value })
+                                }
+                                placeholder="--:--"
+                                className="w-full bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold"
+                              />
+                            </div>
+                            <div className="space-y-0.5">
+                              <span className="text-[9px] text-neutral-500">Fim do Almoço</span>
+                              <input
+                                type="time"
+                                value={dayConfig.lunchEnd || ""}
+                                onChange={(e) =>
+                                  updateDaySchedule(dayConfig.dayOfWeek, { lunchEnd: e.target.value })
+                                }
+                                placeholder="--:--"
+                                className="w-full bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold"
+                              />
+                            </div>
+                          </div>
+                          {!dayConfig.lunchStart && !dayConfig.lunchEnd && (
+                            <p className="text-[10px] text-neutral-500 italic">
+                              Sem pausa: todos os horários entre abertura e fechamento estarão livres.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-xs transition active:scale-95 flex items-center justify-center gap-1.5"
+                className="w-full py-3 rounded-xl bg-gold hover:bg-yellow-400 text-black font-extrabold text-xs shadow-glow transition active:scale-95 flex items-center justify-center gap-1.5"
               >
-                <Save className="w-3.5 h-3.5" />
-                Salvar Horários
+                <Save className="w-4 h-4" />
+                Salvar Horários da Semana
               </button>
             </form>
           </section>
         )}
 
         {/* ==================================================== */}
-        {/* 5. PERSONALIZAÇÃO DE PERFIL, BIO, REDES E CORES      */}
+        {/* 5. PERSONALIZAÇÃO DE PERFIL, FOTOS, REDES E CORES    */}
         {/* ==================================================== */}
         {profile && (
-          <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 p-5 space-y-4">
+          <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 p-5 space-y-5">
             <div className="flex items-center gap-2 text-white font-bold text-sm">
               <Palette className="w-4 h-4 text-gold" />
-              Personalização de Perfil & Cores
+              Personalização de Perfil & Fotos
             </div>
 
+            {/* SEÇÃO DE UPLOAD DIRETO DE IMAGENS (SOBRESCRITA) */}
+            <div className="space-y-4 p-4 rounded-xl bg-neutral-950 border border-neutral-800">
+              <span className="text-xs font-bold text-gold flex items-center gap-1.5">
+                <Upload className="w-4 h-4" />
+                Upload Direto de Fotos
+              </span>
+
+              {/* Upload da Foto de Perfil Redonda */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold text-neutral-300">
+                  Foto de Perfil Redonda
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-gold shadow-glow flex-shrink-0 bg-neutral-900">
+                    <img
+                      src={profile.avatarUrl}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95">
+                      <Upload className="w-3.5 h-3.5 text-gold" />
+                      {uploadingAvatar ? "Enviando..." : "Escolher Foto de Perfil"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={uploadingAvatar}
+                        onChange={(e) => handleFileUpload(e, "avatar")}
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-[10px] text-neutral-500">
+                      A nova foto substitui a anterior automaticamente.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload da Imagem de Banner */}
+              <div className="space-y-2 pt-2 border-t border-neutral-900">
+                <label className="text-[11px] font-semibold text-neutral-300">
+                  Imagem do Banner de Fundo
+                </label>
+                <div className="space-y-2">
+                  <div className="w-full h-20 rounded-xl overflow-hidden border border-neutral-700 bg-neutral-900">
+                    <img
+                      src={profile.bannerUrl}
+                      alt="Banner"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95">
+                    <ImageIcon className="w-3.5 h-3.5 text-gold" />
+                    {uploadingBanner ? "Enviando..." : "Escolher Novo Banner"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingBanner}
+                      onChange={(e) => handleFileUpload(e, "banner")}
+                      className="hidden"
+                    />
+                  </label>
+                  <p className="text-[10px] text-neutral-500">
+                    O novo banner substitui o anterior automaticamente.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* FORMULÁRIO DE DADOS GERAIS (NOME, BIO, REDES E CORES) */}
             <form onSubmit={handleSaveProfile} className="space-y-3">
               <div className="space-y-1">
                 <label className="text-[11px] text-neutral-400">Nome da Barbearia</label>
@@ -579,26 +796,6 @@ export default function AdminPage() {
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                   className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl p-3 text-xs focus:border-gold"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] text-neutral-400">URL da Foto de Perfil (Redonda)</label>
-                <input
-                  type="url"
-                  value={profile.avatarUrl}
-                  onChange={(e) => setProfile({ ...profile, avatarUrl: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] text-neutral-400">URL do Banner</label>
-                <input
-                  type="url"
-                  value={profile.bannerUrl}
-                  onChange={(e) => setProfile({ ...profile, bannerUrl: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
                 />
               </div>
 
@@ -623,7 +820,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* SELETORES DE CORES (PRINCIPAL E SECUNDÁRIA) */}
+              {/* SELETORES DE CORES */}
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="space-y-1">
                   <label className="text-[11px] text-neutral-400">Cor Principal (Fundo)</label>

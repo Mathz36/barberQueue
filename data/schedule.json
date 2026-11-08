@@ -1,6 +1,68 @@
 {
-  "openHour": 9,
-  "closeHour": 19,
   "slotDurationMinutes": 60,
-  "activeDaysOfWeek": [1, 2, 3, 4, 5, 6]
+  "days": [
+    {
+      "dayOfWeek": 1,
+      "dayName": "Segunda-feira",
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "13:00",
+      "lunchStart": "",
+      "lunchEnd": ""
+    },
+    {
+      "dayOfWeek": 2,
+      "dayName": "Terça-feira",
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "19:00",
+      "lunchStart": "12:00",
+      "lunchEnd": "13:00"
+    },
+    {
+      "dayOfWeek": 3,
+      "dayName": "Quarta-feira",
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "19:00",
+      "lunchStart": "12:00",
+      "lunchEnd": "13:00"
+    },
+    {
+      "dayOfWeek": 4,
+      "dayName": "Quinta-feira",
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "19:00",
+      "lunchStart": "12:00",
+      "lunchEnd": "13:00"
+    },
+    {
+      "dayOfWeek": 5,
+      "dayName": "Sexta-feira",
+      "isOpen": true,
+      "openTime": "09:00",
+      "closeTime": "19:00",
+      "lunchStart": "12:00",
+      "lunchEnd": "13:00"
+    },
+    {
+      "dayOfWeek": 6,
+      "dayName": "Sábado",
+      "isOpen": true,
+      "openTime": "08:00",
+      "closeTime": "18:00",
+      "lunchStart": "",
+      "lunchEnd": ""
+    },
+    {
+      "dayOfWeek": 0,
+      "dayName": "Domingo",
+      "isOpen": false,
+      "openTime": "09:00",
+      "closeTime": "14:00",
+      "lunchStart": "",
+      "lunchEnd": ""
+    }
+  ]
 }

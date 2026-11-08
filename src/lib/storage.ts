@@ -4,6 +4,7 @@ import {
   BarberProfile,
   LiveQueue,
   BusinessSchedule,
+  DayScheduleConfig,
   BlockedDay,
   Appointment,
   DayStatus,
@@ -18,7 +19,7 @@ const SCHEDULE_FILE = path.join(DATA_DIR, "schedule.json");
 const BLOCKED_DAYS_FILE = path.join(DATA_DIR, "blocked_days.json");
 const APPOINTMENTS_FILE = path.join(DATA_DIR, "appointments.json");
 
-// Helper for atomic file write
+// Helper para gravação atômica
 async function atomicWriteJson<T>(filePath: string, data: T): Promise<void> {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   const tempPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
@@ -27,7 +28,7 @@ async function atomicWriteJson<T>(filePath: string, data: T): Promise<void> {
   await fs.rename(tempPath, filePath);
 }
 
-// Helper for safe JSON reading
+// Helper para leitura segura
 async function readJson<T>(filePath: string, defaultValue: T): Promise<T> {
   try {
     const raw = await fs.readFile(filePath, "utf-8");
@@ -45,10 +46,6 @@ async function readJson<T>(filePath: string, defaultValue: T): Promise<T> {
 // 1. DATA DE RETENÇÃO E EXPURGO SEMANAL (7 DIAS)
 // ==========================================
 
-/**
- * Retorna o início da semana (Domingo) no formato YYYY-MM-DD.
- * Toda data anterior a este Domingo pertence à semana passada e deve ser expurgada.
- */
 export function getStartOfCurrentWeek(referenceDate: Date = new Date()): string {
   const d = new Date(referenceDate);
   const dayOfWeek = d.getDay(); // 0 = Domingo, 1 = Segunda, etc.
@@ -59,10 +56,6 @@ export function getStartOfCurrentWeek(referenceDate: Date = new Date()): string 
   return `${year}-${month}-${date}`;
 }
 
-/**
- * Remove agendamentos de semanas passadas, mantendo estritamente
- * os agendamentos da semana atual (a partir do domingo corrente).
- */
 export async function pruneOldAppointments(referenceDate: Date = new Date()): Promise<{
   kept: Appointment[];
   prunedCount: number;
@@ -155,18 +148,36 @@ export async function adjustQueue(
 }
 
 // ==========================================
-// 4. HORÁRIOS DE ATENDIMENTO
+// 4. HORÁRIOS DE ATENDIMENTO (SEGUNDA A DOMINGO)
 // ==========================================
 
+export const DEFAULT_WEEK_DAYS: DayScheduleConfig[] = [
+  { dayOfWeek: 1, dayName: "Segunda-feira", isOpen: true, openTime: "09:00", closeTime: "19:00", lunchStart: "12:00", lunchEnd: "13:00" },
+  { dayOfWeek: 2, dayName: "Terça-feira", isOpen: true, openTime: "09:00", closeTime: "19:00", lunchStart: "12:00", lunchEnd: "13:00" },
+  { dayOfWeek: 3, dayName: "Quarta-feira", isOpen: true, openTime: "09:00", closeTime: "19:00", lunchStart: "12:00", lunchEnd: "13:00" },
+  { dayOfWeek: 4, dayName: "Quinta-feira", isOpen: true, openTime: "09:00", closeTime: "19:00", lunchStart: "12:00", lunchEnd: "13:00" },
+  { dayOfWeek: 5, dayName: "Sexta-feira", isOpen: true, openTime: "09:00", closeTime: "19:00", lunchStart: "12:00", lunchEnd: "13:00" },
+  { dayOfWeek: 6, dayName: "Sábado", isOpen: true, openTime: "08:00", closeTime: "18:00", lunchStart: "", lunchEnd: "" },
+  { dayOfWeek: 0, dayName: "Domingo", isOpen: false, openTime: "09:00", closeTime: "14:00", lunchStart: "", lunchEnd: "" },
+];
+
 const DEFAULT_SCHEDULE: BusinessSchedule = {
-  openHour: 9,
-  closeHour: 19,
   slotDurationMinutes: 60,
-  activeDaysOfWeek: [1, 2, 3, 4, 5, 6], // Segunda a Sábado
+  days: DEFAULT_WEEK_DAYS,
 };
 
 export async function getSchedule(): Promise<BusinessSchedule> {
-  return readJson<BusinessSchedule>(SCHEDULE_FILE, DEFAULT_SCHEDULE);
+  const schedule = await readJson<any>(SCHEDULE_FILE, DEFAULT_SCHEDULE);
+  // Se for formato antigo (openHour / closeHour), migra para o novo formato
+  if (!schedule.days || !Array.isArray(schedule.days)) {
+    const migrated: BusinessSchedule = {
+      slotDurationMinutes: schedule.slotDurationMinutes || 60,
+      days: DEFAULT_WEEK_DAYS,
+    };
+    await atomicWriteJson(SCHEDULE_FILE, migrated);
+    return migrated;
+  }
+  return schedule;
 }
 
 export async function updateSchedule(data: Partial<BusinessSchedule>): Promise<BusinessSchedule> {
@@ -214,7 +225,6 @@ export async function unblockDay(date: string): Promise<BlockedDay[]> {
 // ==========================================
 
 export async function getAppointments(date?: string): Promise<Appointment[]> {
-  // Executa rotina de expurgo semanal antes da consulta
   const { kept } = await pruneOldAppointments();
   if (date) {
     return kept.filter((apt) => apt.date === date);
@@ -232,14 +242,12 @@ export async function createAppointment(
     throw new Error("Por favor, informe seu nome para agendar.");
   }
 
-  // Verifica se o dia está bloqueado
   const blockedDays = await getBlockedDays();
   const blocked = blockedDays.find((b) => b.date === date);
   if (blocked) {
     throw new Error(blocked.reason || "A barbearia não estará funcionando nesta data.");
   }
 
-  // Executa limpeza semanal
   await pruneOldAppointments();
 
   const currentAppointments = await readJson<Appointment[]>(APPOINTMENTS_FILE, []);
@@ -265,7 +273,7 @@ export async function deleteAppointment(id: string): Promise<void> {
 }
 
 // ==========================================
-// 7. STATUS E SLOTS DO DIA (VISÃO DO CLIENTE)
+// 7. STATUS E SLOTS DO DIA (COM ALMOÇO OPCIONAL)
 // ==========================================
 
 export async function getDayStatus(date: string): Promise<DayStatus> {
@@ -275,18 +283,32 @@ export async function getDayStatus(date: string): Promise<DayStatus> {
 
   const blocked = blockedDays.find((b) => b.date === date);
 
-  // Calcula se é dia de funcionamento regular (dia da semana)
-  // Formato da date: YYYY-MM-DD
+  // Identifica o dia da semana (0=Domingo, 1=Segunda, etc.)
   const [year, month, day] = date.split("-").map(Number);
   const targetDate = new Date(year, month - 1, day);
   const dayOfWeek = targetDate.getDay();
 
-  const isOpenDay = schedule.activeDaysOfWeek.includes(dayOfWeek) && !blocked;
+  // Busca configuração específica do dia
+  const dayConfig = schedule.days?.find((d) => d.dayOfWeek === dayOfWeek);
+  const isOpenDay = Boolean(dayConfig?.isOpen && !blocked);
 
   const slots: TimeSlotStatus[] = [];
 
-  if (isOpenDay) {
-    for (let h = schedule.openHour; h < schedule.closeHour; h++) {
+  if (isOpenDay && dayConfig) {
+    const openHour = parseInt(dayConfig.openTime?.split(":")[0] || "9", 10);
+    const closeHour = parseInt(dayConfig.closeTime?.split(":")[0] || "19", 10);
+
+    // Horário de almoço (se preenchido)
+    const hasLunch = Boolean(dayConfig.lunchStart?.trim() && dayConfig.lunchEnd?.trim());
+    const lunchStartHour = hasLunch ? parseInt(dayConfig.lunchStart!.split(":")[0], 10) : -1;
+    const lunchEndHour = hasLunch ? parseInt(dayConfig.lunchEnd!.split(":")[0], 10) : -1;
+
+    for (let h = openHour; h < closeHour; h++) {
+      // Se houver horário de almoço e o slot cair dentro do intervalo, pula o horário
+      if (hasLunch && h >= lunchStartHour && h < lunchEndHour) {
+        continue;
+      }
+
       const slotLabel = `${String(h).padStart(2, "0")}:00`;
       const bookedCount = appointments.filter((apt) => apt.timeSlot === slotLabel).length;
       slots.push({

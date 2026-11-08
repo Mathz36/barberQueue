@@ -15,11 +15,19 @@ export interface LiveQueue {
   updatedAt: string;
 }
 
+export interface DayScheduleConfig {
+  dayOfWeek: number; // 0=Domingo, 1=Segunda, 2=Terça, 3=Quarta, 4=Quinta, 5=Sexta, 6=Sábado
+  dayName: string;
+  isOpen: boolean;
+  openTime: string; // "09:00"
+  closeTime: string; // "19:00"
+  lunchStart?: string; // "12:00" (ou vazio)
+  lunchEnd?: string; // "13:00" (ou vazio)
+}
+
 export interface BusinessSchedule {
-  openHour: number;
-  closeHour: number;
   slotDurationMinutes: number;
-  activeDaysOfWeek: number[]; // 0=Sunday, 1=Monday, ..., 6=Saturday
+  days: DayScheduleConfig[];
 }
 
 export interface BlockedDay {
