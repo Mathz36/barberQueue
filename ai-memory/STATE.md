@@ -1,28 +1,46 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** REQUISITO DE PERSISTÊNCIA ATUALIZADO (JSON + LIMPEZA 7 DIAS) - AGUARDANDO AUTORIZAÇÃO  
-> **Fase Atual:** Fase 1 - Planejamento e Arquitetura da Solução  
+> **Status Geral:** IMPLEMENTAÇÃO CONCLUÍDA E TESTADA COM SUCESSO (15/15 TESTES PASSANDO)  
+> **Fase Atual:** Fase 2 - Entrega da Aplicação Completa & Homologação  
 
 ---
 
-## 📌 Contexto Atual e Atualização dos Requisitos
+## 📌 Contexto Atual e Onde Paramos
 
-O usuário refinou a arquitetura técnica com duas diretrizes cruciais:
-1. **Sem Banco de Dados / Sem Prisma:** Toda a persistência de dados será feita puramente em arquivos JSON no diretório `data/` com leitura e escrita atômica.
-2. **Limpeza Automática Semanal (7 dias):** O sistema deve reter apenas os agendamentos da semana atual. Todo domingo (ou agendamentos anteriores à semana corrente), os registros passados devem ser automaticamente eliminados.
+Todas as funcionalidades solicitadas foram implementadas, integradas e aprovadas pela suíte automatizada de testes:
 
-O **Planner Agent** atualizou a arquitetura em [`ai-memory/ARCHITECTURE.md`](./ARCHITECTURE.md) e o backlog de tarefas em [`ai-memory/TASKS.md`](./TASKS.md).
-
-**Onde Paramos:**
-Apresentando o plano ajustado com **O QUE** e **COMO** e aguardando a autorização do usuário para iniciar o setup do projeto.
+1. **Storage JSON & Retenção Semanal (Sem Banco de Dados):**
+   - Todos os dados persistidos em `data/*.json` com escrita atômica contra corrupção.
+   - Algoritmo dominical de expurgo (`pruneOldAppointments`): todo domingo purga agendamentos da semana anterior, mantendo apenas a semana corrente.
+2. **Lado do Cliente (Mobile-First & Aconchegante):**
+   - Header com foto de perfil redonda do barbeiro, banner, bio aberta e botões diretos de WhatsApp e Instagram.
+   - Card em destaque no topo informando a quantidade de pessoas na barbearia ao vivo com atualização em tempo real (polling inteligente).
+   - Calendário responsivo com slots de 1h mostrando apenas a quantidade anônima de pessoas que agendaram.
+   - Modal de agendamento solicitando apenas o nome do cliente.
+   - Modal acolhedor com as regras expressas da barbearia (*"Obrigado pelo agendamento! Informamos que a barbearia dá prioridade à ordem de chegada, portanto não se atrase"*).
+   - Alerta visual no calendário para dias marcados como fechados pelo barbeiro.
+3. **Lado do Barbeiro / Admin (`/admin`):**
+   - Protegido por PIN de 4 dígitos (PIN padrão: `1234`).
+   - Controle instantâneo da fila no topo com botões grandes de `+`, `-`, visualizador do número e botão `Zerar`.
+   - Agenda detalhada com visualização dos nomes dos clientes por horário.
+   - Bloqueio de dia de não funcionamento com mensagem personalizada e cancelamento automático dos agendamentos da data.
+   - Configuração de horários de atendimento (abertura e fechamento).
+   - Customização de foto, banner, redes, bio e seletores de Cor Principal e Secundária (com preview ao vivo).
+4. **Qualidade & CI/CD (Tester Agent):**
+   - 15 testes automatizados cobrindo storage atômico, limpeza semanal, operações de fila e endpoints da API.
+   - Build de produção compilado com sucesso (`next build`).
 
 ---
 
-## 🚀 Próximos Passos Imediatos (Após Aprovação)
+## 🚀 Próximos Passos Sugeridos
 
-1. **Setup Next.js & Tailwind:** Criar projeto Next.js (App Router, TypeScript, TailwindCSS) sem banco de dados externo ou Prisma.
-2. **Backend Agent (JSON Storage Layer):** Desenvolver módulo `src/lib/storage.ts` com escrita atômica para os arquivos `data/*.json` e algoritmo de limpeza semanal dominical.
-3. **Backend Agent (APIs):** Implementar endpoints da fila ao vivo, perfil/cores, calendário/slots e agendamentos.
-4. **Tester Agent:** Criar testes unitários para o storage JSON e especialmente para a função de expurgo de agendamentos com mais de 7 dias / semanas anteriores.
-5. **Frontend Agent:** Implementar interfaces mobile (cliente e admin) com tema Preto e Dourado.
+1. O usuário pode iniciar o servidor de desenvolvimento (`npm run dev`) ou produção (`npm run build && npm start`) e navegar em `http://localhost:3000` (Cliente) e `http://localhost:3000/admin` (Barbeiro).
+2. Definir o PIN final e personalizar as fotos reais do barbeiro e cores pelo próprio painel `/admin`.
+
+---
+
+## 🤝 Handover / Passagem de Bastão
+
+- **Agente Responsável:** Planner Agent & Tester Agent
+- **Status do Código:** 100% testado, build verde, branch `main` limpa e sincronizada.
