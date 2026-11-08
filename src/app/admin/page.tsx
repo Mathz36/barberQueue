@@ -392,7 +392,7 @@ export default function AdminPage() {
               placeholder="••••"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
-              className="w-full text-center text-3xl tracking-widest py-3 px-4 rounded-2xl bg-neutral-900 border-2 border-neutral-700 text-gold focus:outline-none focus:border-gold"
+              className="w-full max-w-full box-border text-center text-3xl tracking-widest py-3 px-4 rounded-2xl bg-neutral-900 border-2 border-neutral-700 text-gold focus:outline-none focus:border-gold"
             />
 
             {authError && <p className="text-xs text-rose-400 font-medium">{authError}</p>}
@@ -423,7 +423,7 @@ export default function AdminPage() {
       <ThemeInjector profile={profile || undefined} />
 
       {/* BARRA SUPERIOR DO ADMIN */}
-      <div className="sticky top-0 z-40 bg-[#141414]/95 backdrop-blur-md border-b border-neutral-800 px-5 py-3.5 flex items-center justify-between">
+      <div className="sticky top-0 z-40 bg-[#141414]/95 backdrop-blur-md border-b border-neutral-800 px-4 sm:px-5 py-3.5 flex items-center justify-between">
         <Link
           href="/"
           className="flex items-center gap-1.5 text-xs font-semibold text-neutral-300 hover:text-gold transition active:scale-95"
@@ -438,7 +438,7 @@ export default function AdminPage() {
 
       {/* NOTIFICAÇÃO PADRONIZADA (CONFIGURAÇÃO SALVA / ERRO) */}
       {notification && (
-        <div className="sticky top-14 z-50 px-5 pt-3 animate-in fade-in slide-in-from-top-2">
+        <div className="sticky top-14 z-50 px-3.5 sm:px-5 pt-3 animate-in fade-in slide-in-from-top-2">
           <div
             className={`p-3.5 rounded-xl border flex items-center justify-between shadow-2xl text-xs font-bold ${
               notification.type === "success"
@@ -464,11 +464,11 @@ export default function AdminPage() {
         </div>
       )}
 
-      <div className="px-5 py-5 space-y-6">
+      <div className="px-3.5 sm:px-5 py-4 sm:py-5 space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden">
         {/* ==================================================== */}
         {/* 1. CONTROLE INSTANTÂNEO DA FILA AO VIVO (+, -, ZERAR) */}
         {/* ==================================================== */}
-        <section className="rounded-3xl bg-gradient-to-br from-neutral-900 via-black to-neutral-900 border-2 border-gold/40 p-6 shadow-glow text-center space-y-4">
+        <section className="rounded-3xl bg-gradient-to-br from-neutral-900 via-black to-neutral-900 border-2 border-gold/40 p-5 sm:p-6 shadow-glow text-center space-y-4">
           <div className="flex items-center justify-center gap-2 text-gold">
             <Users className="w-5 h-5" />
             <h2 className="text-sm font-bold uppercase tracking-wider">
@@ -540,12 +540,12 @@ export default function AdminPage() {
             </div>
 
             {/* Abas de Filtro: Por Dia ou Toda a Semana */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-neutral-900 border border-neutral-800">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-neutral-900 border border-neutral-800 self-start">
                 <button
                   type="button"
                   onClick={() => setAgendaFilterMode("day")}
-                  className={`py-1 px-3 rounded-lg text-xs font-semibold transition ${
+                  className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition ${
                     agendaFilterMode === "day"
                       ? "bg-gold text-black font-bold shadow-sm"
                       : "text-neutral-400 hover:text-white"
@@ -556,7 +556,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setAgendaFilterMode("all")}
-                  className={`py-1 px-3 rounded-lg text-xs font-semibold transition ${
+                  className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition ${
                     agendaFilterMode === "all"
                       ? "bg-gold text-black font-bold shadow-sm"
                       : "text-neutral-400 hover:text-white"
@@ -567,12 +567,14 @@ export default function AdminPage() {
               </div>
 
               {agendaFilterMode === "day" && (
-                <input
-                  type="date"
-                  value={agendaDate}
-                  onChange={(e) => setAgendaDate(e.target.value)}
-                  className="bg-neutral-900 border border-neutral-700 text-white rounded-xl py-1.5 px-3 text-xs focus:border-gold focus:outline-none"
-                />
+                <div className="w-full sm:w-auto">
+                  <input
+                    type="date"
+                    value={agendaDate}
+                    onChange={(e) => setAgendaDate(e.target.value)}
+                    className="w-full sm:w-auto bg-neutral-900 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold focus:outline-none max-w-full"
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -619,7 +621,7 @@ export default function AdminPage() {
         {/* ==================================================== */}
         {/* 3. MARCAR DIA COMO NÃO FUNCIONAMENTO (BLOQUEIOS)      */}
         {/* ==================================================== */}
-        <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 p-5 space-y-4">
+        <section className="rounded-2xl bg-neutral-900/90 border border-neutral-800 p-4 sm:p-5 space-y-4">
           <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
             <AlertTriangle className="w-4 h-4" />
             Marcar Dia de Não Funcionamento
@@ -637,7 +639,7 @@ export default function AdminPage() {
                 required
                 value={blockDate}
                 onChange={(e) => setBlockDate(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2.5 px-3 text-xs focus:border-gold focus:outline-none"
+                className="w-full max-w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2.5 px-3 text-xs focus:border-gold focus:outline-none"
               />
             </div>
 
@@ -650,7 +652,7 @@ export default function AdminPage() {
                 placeholder="Ex: Folga de feriado, retornamos na terça-feira!"
                 value={blockReason}
                 onChange={(e) => setBlockReason(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl p-3 text-xs focus:border-gold focus:outline-none placeholder-neutral-600"
+                className="w-full max-w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl p-3 text-xs focus:border-gold focus:outline-none placeholder-neutral-600 resize-none"
               />
             </div>
 
@@ -696,7 +698,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setIsScheduleOpen(!isScheduleOpen)}
-              className="w-full p-5 flex items-center justify-between text-left hover:bg-neutral-800/40 transition active:scale-[0.99]"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-neutral-800/40 transition active:scale-[0.99]"
             >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center text-gold">
@@ -718,7 +720,7 @@ export default function AdminPage() {
 
             {/* Conteúdo Expansível */}
             {isScheduleOpen && (
-              <div className="p-5 pt-1 border-t border-neutral-800 space-y-4 animate-in fade-in slide-in-from-top-2">
+              <div className="p-3.5 sm:p-5 pt-1 border-t border-neutral-800 space-y-4 animate-in fade-in slide-in-from-top-2">
                 <p className="text-xs text-neutral-400 leading-relaxed">
                   Configure abertura, fechamento e o <strong>horário de almoço</strong> para cada dia. Deixe o almoço vazio caso não faça pausa.
                 </p>
@@ -728,7 +730,7 @@ export default function AdminPage() {
                     {getOrderedDays().map((dayConfig) => (
                       <div
                         key={dayConfig.dayOfWeek}
-                        className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800/90 space-y-3"
+                        className="p-3 sm:p-3.5 rounded-xl bg-neutral-950 border border-neutral-800/90 space-y-3"
                       >
                         {/* Header do Dia com Toggle Aberto/Fechado */}
                         <div className="flex items-center justify-between">
@@ -753,8 +755,8 @@ export default function AdminPage() {
                         {dayConfig.isOpen && (
                           <div className="space-y-2.5 pt-1 border-t border-neutral-900">
                             {/* Abertura e Fechamento */}
-                            <div className="grid grid-cols-2 gap-2.5">
-                              <div className="space-y-1">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-2.5 min-w-0">
+                              <div className="space-y-1 min-w-0">
                                 <label className="text-[10px] text-neutral-400 uppercase font-semibold">
                                   Abertura
                                 </label>
@@ -764,10 +766,10 @@ export default function AdminPage() {
                                   onChange={(e) =>
                                     updateDaySchedule(dayConfig.dayOfWeek, { openTime: e.target.value })
                                   }
-                                  className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold"
+                                  className="w-full max-w-full min-w-0 bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold box-border"
                                 />
                               </div>
-                              <div className="space-y-1">
+                              <div className="space-y-1 min-w-0">
                                 <label className="text-[10px] text-neutral-400 uppercase font-semibold">
                                   Fechamento
                                 </label>
@@ -777,7 +779,7 @@ export default function AdminPage() {
                                   onChange={(e) =>
                                     updateDaySchedule(dayConfig.dayOfWeek, { closeTime: e.target.value })
                                   }
-                                  className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold"
+                                  className="w-full max-w-full min-w-0 bg-neutral-900 border border-neutral-700 text-white rounded-lg p-2 text-xs focus:border-gold box-border"
                                 />
                               </div>
                             </div>
@@ -802,8 +804,8 @@ export default function AdminPage() {
                                 )}
                               </div>
 
-                              <div className="grid grid-cols-2 gap-2">
-                                <div className="space-y-0.5">
+                              <div className="grid grid-cols-2 gap-2 min-w-0">
+                                <div className="space-y-0.5 min-w-0">
                                   <span className="text-[9px] text-neutral-500">Início do Almoço</span>
                                   <input
                                     type="time"
@@ -812,10 +814,10 @@ export default function AdminPage() {
                                       updateDaySchedule(dayConfig.dayOfWeek, { lunchStart: e.target.value })
                                     }
                                     placeholder="--:--"
-                                    className="w-full bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold"
+                                    className="w-full max-w-full min-w-0 bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold box-border"
                                   />
                                 </div>
-                                <div className="space-y-0.5">
+                                <div className="space-y-0.5 min-w-0">
                                   <span className="text-[9px] text-neutral-500">Fim do Almoço</span>
                                   <input
                                     type="time"
@@ -824,7 +826,7 @@ export default function AdminPage() {
                                       updateDaySchedule(dayConfig.dayOfWeek, { lunchEnd: e.target.value })
                                     }
                                     placeholder="--:--"
-                                    className="w-full bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold"
+                                    className="w-full max-w-full min-w-0 bg-neutral-950 border border-neutral-700 text-white rounded p-1.5 text-xs focus:border-gold box-border"
                                   />
                                 </div>
                               </div>
@@ -862,7 +864,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="w-full p-5 flex items-center justify-between text-left hover:bg-neutral-800/40 transition active:scale-[0.99]"
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-neutral-800/40 transition active:scale-[0.99]"
             >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center text-gold">
@@ -884,9 +886,9 @@ export default function AdminPage() {
 
             {/* Conteúdo Expansível */}
             {isProfileOpen && (
-              <div className="p-5 pt-1 border-t border-neutral-800 space-y-5 animate-in fade-in slide-in-from-top-2">
+              <div className="p-3.5 sm:p-5 pt-1 border-t border-neutral-800 space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-top-2">
                 {/* SEÇÃO DE UPLOAD DIRETO DE IMAGENS (SOBRESCRITA) */}
-                <div className="space-y-4 p-4 rounded-xl bg-neutral-950 border border-neutral-800">
+                <div className="space-y-4 p-3.5 sm:p-4 rounded-xl bg-neutral-950 border border-neutral-800">
                   <span className="text-xs font-bold text-gold flex items-center gap-1.5">
                     <Upload className="w-4 h-4" />
                     Upload Direto de Fotos
@@ -905,10 +907,10 @@ export default function AdminPage() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="flex-1 space-y-1">
-                        <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95">
-                          <Upload className="w-3.5 h-3.5 text-gold" />
-                          {uploadingAvatar ? "Enviando..." : "Escolher Foto de Perfil"}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95 max-w-full">
+                          <Upload className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                          <span className="truncate">{uploadingAvatar ? "Enviando..." : "Escolher Foto de Perfil"}</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -937,9 +939,9 @@ export default function AdminPage() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95">
-                        <ImageIcon className="w-3.5 h-3.5 text-gold" />
-                        {uploadingBanner ? "Enviando..." : "Escolher Novo Banner"}
+                      <label className="cursor-pointer inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-semibold border border-neutral-700 transition active:scale-95 max-w-full">
+                        <ImageIcon className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                        <span className="truncate">{uploadingBanner ? "Enviando..." : "Escolher Novo Banner"}</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -963,7 +965,7 @@ export default function AdminPage() {
                       type="text"
                       value={profile.name}
                       onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                      className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
+                      className="w-full max-w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold box-border"
                     />
                   </div>
 
@@ -973,58 +975,59 @@ export default function AdminPage() {
                       rows={2}
                       value={profile.bio}
                       onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                      className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl p-3 text-xs focus:border-gold"
+                      className="w-full max-w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl p-3 text-xs focus:border-gold box-border resize-none"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1 min-w-0">
                       <label className="text-[11px] text-neutral-400">WhatsApp (apenas números)</label>
                       <input
-                        type="text"
+                        type="tel"
+                        inputMode="numeric"
                         value={profile.whatsappNumber}
                         onChange={(e) => setProfile({ ...profile, whatsappNumber: e.target.value })}
-                        className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
+                        className="w-full max-w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold box-border"
                       />
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0">
                       <label className="text-[11px] text-neutral-400">Instagram URL</label>
                       <input
                         type="url"
                         value={profile.instagramUrl}
                         onChange={(e) => setProfile({ ...profile, instagramUrl: e.target.value })}
-                        className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold"
+                        className="w-full max-w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl py-2 px-3 text-xs focus:border-gold box-border"
                       />
                     </div>
                   </div>
 
                   {/* SELETORES DE CORES */}
-                  <div className="grid grid-cols-2 gap-3 pt-2">
-                    <div className="space-y-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <div className="space-y-1 min-w-0">
                       <label className="text-[11px] text-neutral-400">Cor Principal (Fundo)</label>
-                      <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl p-1.5">
+                      <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl p-1.5 min-w-0">
                         <input
                           type="color"
                           value={profile.primaryColor}
                           onChange={(e) => setProfile({ ...profile, primaryColor: e.target.value })}
-                          className="w-7 h-7 rounded cursor-pointer bg-transparent border-0"
+                          className="w-7 h-7 rounded cursor-pointer bg-transparent border-0 flex-shrink-0"
                         />
-                        <span className="text-xs text-neutral-300 uppercase font-mono">
+                        <span className="text-xs text-neutral-300 uppercase font-mono truncate">
                           {profile.primaryColor}
                         </span>
                       </div>
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0">
                       <label className="text-[11px] text-neutral-400">Cor Secundária (Destaque)</label>
-                      <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl p-1.5">
+                      <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded-xl p-1.5 min-w-0">
                         <input
                           type="color"
                           value={profile.secondaryColor}
                           onChange={(e) => setProfile({ ...profile, secondaryColor: e.target.value })}
-                          className="w-7 h-7 rounded cursor-pointer bg-transparent border-0"
+                          className="w-7 h-7 rounded cursor-pointer bg-transparent border-0 flex-shrink-0"
                         />
-                        <span className="text-xs text-neutral-300 uppercase font-mono">
+                        <span className="text-xs text-neutral-300 uppercase font-mono truncate">
                           {profile.secondaryColor}
                         </span>
                       </div>

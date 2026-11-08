@@ -4,6 +4,18 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.4.1] - 2026-11-08
+
+### Responsividade e Alinhamento do Painel Admin em Telas Finas (iPhone 11)
+- **Commit:** `fix: improve mobile responsiveness and input layout on admin panel for narrow screens`
+  - Reorganização do filtro de agenda (`flex-col sm:flex-row`) evitando compressão e estouro lateral do seletor de data.
+  - Empilhamento de campos de contato no mobile (`grid-cols-1 sm:grid-cols-2` para WhatsApp e Instagram) proporcionando largura total para digitação.
+  - Normalização no WebKit iOS para `input[type="date"]` e `input[type="time"]` com `box-border`, `min-w-0` e alinhamento de texto em [`src/app/globals.css`](src/app/globals.css).
+  - Trava de viewport horizontal com `overflow-x-hidden` no layout container em [`src/app/layout.tsx`](src/app/layout.tsx).
+  - Ajuste de padding responsivo da tela administrativa (`px-3.5 sm:px-5`).
+
+---
+
 ## [1.4.0] - 2026-11-08
 
 ### Desacoplamento Completo de Arquivos Locais e 100% Supabase

@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="min-h-screen antialiased bg-[#0D0D0D] text-neutral-100 flex justify-center">
-        <div className="w-full max-w-md min-h-screen bg-[#141414] shadow-2xl relative flex flex-col">
+        <div className="w-full max-w-md min-h-screen bg-[#141414] shadow-2xl relative flex flex-col overflow-x-hidden">
           <div className="flex-1 flex flex-col pb-8">
             {children}
           </div>

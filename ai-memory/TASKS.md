@@ -25,6 +25,7 @@ Este arquivo é gerenciado pelo **Planner Agent** e organiza a divisão de traba
 | **TSK-028** | Frontend / Tester | Status inteligente de almoço e fechamento no card Ao Vivo do cliente | `DONE` | Sim | `feat: display closed and lunch status on client live queue card` |
 | **TSK-029** | Frontend / Tester | Mensagem detalhada com horário de fechamento ("encerrado às HH:MM") e abertura | `DONE` | Sim | `feat: improve closed status message showing exact closing and opening hours` |
 | **TSK-030** | Backend / DevOps | Remoção completa da pasta local data/ e migração exclusiva para o Supabase | `DONE` | Sim | `chore: remove local data json directory and rely on supabase storage` |
+| **TSK-031** | Frontend / Tester | Otimização de responsividade e inputs do painel admin para telas móveis (iPhone 11) | `DONE` | Sim | `fix: improve mobile responsiveness and input layout on admin panel for narrow screens` |
 
 ---
 
