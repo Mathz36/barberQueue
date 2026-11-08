@@ -1,12 +1,15 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** CONCLUÍDO - TSK-031 (Responsividade do Admin no Mobile / iPhone 11)  
-> **Fase Atual:** Fase 12 - Refinamento Mobile UX / Admin Responsivo  
+> **Status Geral:** CONCLUÍDO - TSK-032 (Documentação Completa no README.md)  
+> **Fase Atual:** Fase 13 - Documentação Pública & Open-Source Readiness  
 
 ---
 
 ## 📌 Contexto Atual e Entregas Recentes
+
+- **TSK-032 Concluído:** Criado [`README.md`](README.md) completo na raiz do repositório, com história e propósito do software (piloto com amigo barbeiro), arquitetura detalhada, diagrama em Mermaid, guia passo a passo para clonar e rodar com Supabase e Vercel, e detalhes dos 29 testes automatizados.
+- **Transparência e Open Source:** Repositório pronto para apresentação pública e compartilhamento no GitHub.
 
 - **TSK-031 Concluído:** Otimização dos formulários, inputs de data/hora, grids e espaçamento no painel administrativo eliminando qualquer estouro lateral em smartphones finos (iPhone 11, iPhone SE).
 - **Ajustes de WebKit:** Normalização de `input[type="date"]` e `input[type="time"]` para o Safari no iOS com neutralização de largura mínima intrínseca e alinhamento de texto.

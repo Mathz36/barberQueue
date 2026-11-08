@@ -4,6 +4,18 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.4.2] - 2026-11-08
+
+### Documentação Completa do Projeto e Guia Open-Source no README
+- **Commit:** `docs: add comprehensive readme with architecture, setup guide, and motivation`
+  - Criação do [`README.md`](README.md) completo na raiz do repositório.
+  - Seção "Pra quem é esse software?": história real da criação do app a partir das dores de um amigo barbeiro, linguagem informal, empática e acolhedora.
+  - Documentação da arquitetura híbrida (Next.js 15, React 19, Supabase JSONB, Supabase Storage e Vercel Keep-Alive Cron).
+  - Guia de setup passo a passo (instalação, schema SQL no Supabase, variáveis de ambiente e deploy na Vercel).
+  - Detalhamento dos 29 testes automatizados com Vitest.
+
+---
+
 ## [1.4.1] - 2026-11-08
 
 ### Responsividade e Alinhamento do Painel Admin em Telas Finas (iPhone 11)
