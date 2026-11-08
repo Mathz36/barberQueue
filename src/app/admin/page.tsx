@@ -47,6 +47,14 @@ export default function AdminPage() {
 
   // Filtro de Data da Agenda
   const [agendaDate, setAgendaDate] = useState<string>("");
+  const [agendaFilterMode, setAgendaFilterMode] = useState<"day" | "all">("day");
+
+  // Helper para formatar data sem desvio de fuso horário
+  const formatSafeDate = (dateStr: string) => {
+    if (!dateStr || !dateStr.includes("-")) return dateStr;
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year}`;
+  };
 
   // Formulário de Bloqueio de Dia
   const [blockDate, setBlockDate] = useState<string>("");
@@ -129,7 +137,8 @@ export default function AdminPage() {
       .then((d) => setBlockedDays(Array.isArray(d) ? d : []))
       .catch((err) => showNotification("error", `Erro ao carregar bloqueios: ${err.message}`));
 
-    loadAppointments(activePin, agendaDate);
+    const targetDate = agendaDate || new Date().toISOString().split("T")[0];
+    loadAppointments(activePin, agendaFilterMode === "day" ? targetDate : undefined);
   };
 
   const loadAppointments = (activePin: string, date?: string) => {
@@ -141,10 +150,14 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && pin && agendaDate) {
-      loadAppointments(pin, agendaDate);
+    if (isAuthenticated && pin) {
+      if (agendaFilterMode === "day" && agendaDate) {
+        loadAppointments(pin, agendaDate);
+      } else if (agendaFilterMode === "all") {
+        loadAppointments(pin);
+      }
     }
-  }, [agendaDate, isAuthenticated, pin]);
+  }, [agendaDate, agendaFilterMode, isAuthenticated, pin]);
 
   // CONTROLE DA FILA (+, -, ZERAR, SET)
   const handleQueueAction = async (action: "increment" | "decrement" | "reset" | "set", value?: number) => {
@@ -277,15 +290,15 @@ export default function AdminPage() {
   // COMPARTILHAR AGENDA NO WHATSAPP
   const handleShareAgenda = () => {
     if (!appointments.length) {
-      showNotification("error", "Erro: Não há agendamentos nesta data para compartilhar.");
+      showNotification("error", "Erro: Não há agendamentos para compartilhar.");
       return;
     }
-    const [year, month, day] = agendaDate.split("-");
-    let text = `💈 *Agenda Barbearia - ${day}/${month}/${year}*\n\n`;
+    const titleDate = agendaFilterMode === "day" ? formatSafeDate(agendaDate) : "Semana Atual";
+    let text = `💈 *Agenda Barbearia - ${titleDate}*\n\n`;
     [...appointments]
-      .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot))
+      .sort((a, b) => a.date.localeCompare(b.date) || a.timeSlot.localeCompare(b.timeSlot))
       .forEach((apt) => {
-        text += `✂️ ${apt.timeSlot} - ${apt.clientName}\n`;
+        text += `✂️ ${formatSafeDate(apt.date)} às ${apt.timeSlot} - ${apt.clientName}\n`;
       });
     text += `\n_Total: ${appointments.length} pessoas agendadas_`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
@@ -508,64 +521,97 @@ export default function AdminPage() {
         {/* 2. PANORAMA GERAL DA AGENDA (VISÃO DO BARBEIRO)      */}
         {/* ==================================================== */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gold" />
-              Agenda do Dia
-            </h3>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={agendaDate}
-                onChange={(e) => setAgendaDate(e.target.value)}
-                className="bg-neutral-900 border border-neutral-700 text-white rounded-xl py-1.5 px-3 text-xs focus:border-gold focus:outline-none"
-              />
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gold" />
+                Agenda do Barbeiro
+              </h3>
               {appointments.length > 0 && (
                 <button
                   onClick={handleShareAgenda}
                   title="Compartilhar no WhatsApp"
-                  className="p-2 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 active:scale-95 transition"
+                  className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 active:scale-95 transition text-xs font-semibold"
                 >
                   <Share2 className="w-3.5 h-3.5" />
+                  Compartilhar
                 </button>
+              )}
+            </div>
+
+            {/* Abas de Filtro: Por Dia ou Toda a Semana */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-neutral-900 border border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setAgendaFilterMode("day")}
+                  className={`py-1 px-3 rounded-lg text-xs font-semibold transition ${
+                    agendaFilterMode === "day"
+                      ? "bg-gold text-black font-bold shadow-sm"
+                      : "text-neutral-400 hover:text-white"
+                  }`}
+                >
+                  Por Dia
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAgendaFilterMode("all")}
+                  className={`py-1 px-3 rounded-lg text-xs font-semibold transition ${
+                    agendaFilterMode === "all"
+                      ? "bg-gold text-black font-bold shadow-sm"
+                      : "text-neutral-400 hover:text-white"
+                  }`}
+                >
+                  Toda a Semana
+                </button>
+              </div>
+
+              {agendaFilterMode === "day" && (
+                <input
+                  type="date"
+                  value={agendaDate}
+                  onChange={(e) => setAgendaDate(e.target.value)}
+                  className="bg-neutral-900 border border-neutral-700 text-white rounded-xl py-1.5 px-3 text-xs focus:border-gold focus:outline-none"
+                />
               )}
             </div>
           </div>
 
           {appointments.length === 0 ? (
             <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800 text-center text-xs text-neutral-400">
-              Nenhum agendamento registrado para {agendaDate}.
+              {agendaFilterMode === "day"
+                ? `Nenhum agendamento registrado para ${formatSafeDate(agendaDate)}.`
+                : "Nenhum agendamento registrado para esta semana."}
             </div>
           ) : (
             <div className="space-y-2">
-              {appointments.map((apt) => (
-                <div
-                  key={apt.id}
-                  className="p-3.5 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-between"
-                >
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gold px-2 py-0.5 rounded bg-gold/10">
-                        {apt.timeSlot}
-                      </span>
-                      <span className="text-sm font-bold text-white">
-                        {apt.clientName}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-neutral-500">
-                      Marcado em {new Date(apt.createdAt).toLocaleDateString("pt-BR")}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => handleDeleteAppointment(apt.id)}
-                    className="p-2 rounded-lg text-neutral-500 hover:text-rose-400 hover:bg-neutral-800 transition"
-                    title="Cancelar este agendamento"
+              {[...appointments]
+                .sort((a, b) => a.date.localeCompare(b.date) || a.timeSlot.localeCompare(b.timeSlot))
+                .map((apt) => (
+                  <div
+                    key={apt.id}
+                    className="p-3.5 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-between hover:border-gold/30 transition"
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                    <div className="space-y-1.5">
+                      <div className="text-sm font-bold text-white tracking-wide">
+                        {apt.clientName}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-extrabold text-gold px-2.5 py-0.5 rounded-lg bg-gold/15 border border-gold/30">
+                          📅 {formatSafeDate(apt.date)} às {apt.timeSlot}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleDeleteAppointment(apt.id)}
+                      className="p-2 rounded-lg text-neutral-500 hover:text-rose-400 hover:bg-neutral-800 transition"
+                      title="Cancelar este agendamento"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
             </div>
           )}
         </section>
