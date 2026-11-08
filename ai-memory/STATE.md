@@ -1,33 +1,23 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** AJUSTES DE UPLOAD E HORÁRIOS CONCLUÍDOS COM 20/20 TESTES PASSANDO  
-> **Fase Atual:** Fase 3 - Conclusão dos Ajustes Solicitados pelo Usuário  
+> **Status Geral:** NOVAS MELHORIAS DE UX NO ADMIN RECEBIDAS - AGUARDANDO AUTORIZAÇÃO  
+> **Fase Atual:** Fase 4 - Refinamento de Interface e Notificações do Barbeiro  
 
 ---
 
-## 📌 Contexto Atual e Entregas Recentes
+## 📌 Contexto Atual e Novas Melhorias
 
-Os dois novos requisitos solicitados foram desenvolvidos, testados e validados:
+O usuário solicitou dois aprimoramentos de usabilidade essenciais para o painel de administração (`/admin`) no celular:
 
-1. **Upload Direto de Imagem com Sobrescrita Automática:**
-   - Endpoint `POST /api/admin/upload` implementado com suporte a `multipart/form-data`.
-   - Ao enviar uma nova foto de perfil ou banner, o arquivo anterior do mesmo tipo é automaticamente deletado de `public/uploads/` e substituído pela nova versão, sem acumular arquivos órfãos.
-   - Interface do Admin com seletores de arquivo táteis para smartphone e preview imediato.
-2. **Horários de Segunda a Domingo & Intervalo de Almoço Opcional:**
-   - Modelo de dados atualizado para conter os 7 dias da semana ordenados (Segunda a Domingo).
-   - Cada dia possui controle individual de "Aberto/Fechado", "Horário de Abertura", "Horário de Fechamento" e "Horário de Almoço (opcional)".
-   - Quando o almoço está preenchido, os slots desse período são omitidos da agenda do cliente. Quando vazio, todos os slots regulares de 1h ficam disponíveis.
-   - Botão no painel para limpar o almoço com 1 toque no celular.
-3. **Qualidade & CI/CD (Tester Agent):**
-   - 20 testes automatizados passando em 6 suítes (cobertura total de regras de agendamento, expurgo semanal, fila, upload e horários).
-   - Build de produção compilado com sucesso (`next build`).
+1. **Sistema Padronizado de Notificações de Ação (Sucesso e Erro):**
+   - Ao salvar qualquer alteração com sucesso: exibir notificação clara *"Configuração Salva"* com ícone de confirmação.
+   - Diante de qualquer falha ou erro: exibir notificação destacada *"Erro: <descrição do erro>"*.
+2. **Seções Expansíveis (Dropdown / Acordeão Mobile):**
+   - Transformar as seções **Horário de Atendimento** e **Personalização de Perfil & Fotos** em painéis colapsáveis (dropdown).
+   - Ao tocar no cabeçalho da seção, o painel se expande exibindo o formulário completo de configuração, reduzindo a rolagem no celular e deixando a tela muito mais limpa e organizada.
 
----
+O **Planner Agent** estruturou a proposta técnica e atualizou [`ai-memory/TASKS.md`](./TASKS.md).
 
-## 🚀 Como Executar
-
-- **Servidor Dev:** `npm run dev`
-- **Página do Cliente:** `http://localhost:3000`
-- **Painel do Barbeiro:** `http://localhost:3000/admin` (PIN: `1234`)
-- **Suíte de Testes:** `npm test`
+**Onde Paramos:**
+Apresentando o plano técnico de **O QUE** e **COMO** e aguardando a autorização expressa do usuário antes de aplicar as modificações.
