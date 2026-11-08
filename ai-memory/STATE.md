@@ -1,35 +1,37 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** AGUARDANDO IDEIA DO USUÁRIO  
-> **Fase Atual:** Fase 0 - Inicialização e Configuração Multiagente  
+> **Status Geral:** PLANO E ARQUITETURA DETALHADOS - AGUARDANDO APROVAÇÃO DO USUÁRIO  
+> **Fase Atual:** Fase 1 - Planejamento e Arquitetura da Solução  
 
 ---
 
 ## 📌 Contexto Atual e Onde Paramos
 
-A infraestrutura multiagente foi criada e configurada com sucesso:
-- **Planner Agent:** Definido e pronto para decomposição e validação.
-- **Frontend Agent:** Definido e focado em UX aconchegante, simples e 100% responsivo para smartphone.
-- **Backend Agent:** Definido e orientado a escalabilidade e clean architecture.
-- **Tester Agent:** Definido com foco em testes automatizados (CI/CD) e prevenção de regressão de bugs.
-- **Regras de Governança:** Bloqueio mandatório de alterações de código sem aprovação explícita do usuário. Padrão de commits em inglês (`Conventional Commits`).
+A visão do produto foi detalhada pelo usuário:
+- **App Híbrido (Ordem de Chegada + Intenção de Horário):**
+  - **Cliente:** Não exige dados pessoais complexos (apenas nome). Vê contador em tempo real de quantas pessoas estão na barbearia no momento. Calendário de agendamento de 1h por corte mostrando a quantidade de pessoas agendadas por horário (sem nomes). Aviso explícito sobre prioridade de ordem de chegada.
+  - **Barbeiro (Admin):** Controle simples da fila em tempo real (botões `+`, `-`, número e `Zerar`). Visão geral da agenda com nomes dos clientes. Autonomia para marcar dias como não funcionamento (com mensagem personalizada e cancelamento de agendamentos). Definição de horários de funcionamento. Personalização visual (foto redonda, banner, WhatsApp, Instagram, Bio e cores primária e secundária).
+  - **Foco de Interface:** 100% Smartphone (mobile-first), leigo, simples e acolhedor (Preto e Dourado padrão).
+
+O **Planner Agent** elaborou o plano técnico detalhado (O QUE e COMO) e a decomposição de tarefas para os agentes `frontend`, `backend` e `tester`.
 
 **Onde Paramos:**
-Aguardando o usuário fornecer a visão e descrição detalhada da ideia do projeto (app web de barbearia).
+Aguardando autorização explícita do usuário para dar início à Fase 2 (Setup da Stack e Implementação).
 
 ---
 
-## 🚀 Próximos Passos Imediatos
+## 🚀 Próximos Passos Imediatos (Após Aprovação)
 
-1. Receber a descrição da ideia do projeto pelo usuário.
-2. O **Planner Agent** processará a ideia, discutirá a arquitetura macro e desenhará o plano inicial de entrega.
-3. Submeter o plano para aprovação do usuário com detalhamento de **O QUE** e **COMO**.
-4. Distribuir as primeiras tasks para Frontend, Backend e Tester em `TASKS.md`.
+1. **Setup do Projeto:** Inicializar Next.js (App Router, TypeScript, TailwindCSS) com suporte a CSS Variables para temas dinâmicos e banco de dados SQLite / Prisma.
+2. **Backend Agent:** Implementar modelos de dados e APIs REST (fila em tempo real, agendamentos, bloqueio de dias, perfil e tema).
+3. **Tester Agent:** Criar testes unitários para regras de negócio críticas (fila, cancelamento em lote de dias bloqueados, concorrência).
+4. **Frontend Agent:** Construir interface mobile do cliente (fila ao vivo, header do barbeiro, calendário/slots) e painel admin do barbeiro (+/- da fila, agenda, configurações).
+5. **Tester Agent:** Validar suíte E2E em viewport mobile e testes de estresse.
 
 ---
 
 ## 🤝 Handover / Passagem de Bastão
 
-- **Agente Ativo:** Planner Agent (Aguardando briefing do usuário).
-- **Pendência de Bloqueio:** Definição dos requisitos de negócio e funcionalidades principais da barbearia.
+- **Agente Ativo:** Planner Agent
+- **Status:** Aguardando resposta do usuário sobre o plano de implementação.
