@@ -1,21 +1,16 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** TRANSIÇÃO FLUIDA DE DIAS E SLOTS IMPLEMENTADA E TESTADA  
-> **Fase Atual:** Fase 7 - Polimento de Animações e Fluidez Visual Mobile  
+> **Status Geral:** RODAPÉ DE CRÉDITOS DO DESENVOLVEDOR (GITHUB) IMPLEMENTADO E TESTADO  
+> **Fase Atual:** Fase 7 - Polimento de Layout e Autoria  
 
 ---
 
 ## 📌 Contexto Atual e Entregas Recentes
 
-O refinamento de microinterações no lado do cliente foi concluído com sucesso:
-- **Auto-rolagem suave:** Ao tocar em qualquer dia da semana no carrossel, o botão desliza com centralização suave (`scrollIntoView({ behavior: 'smooth', inline: 'center' })`).
-- **Animação tátil do botão:** Efeito de escala suave (`scale-105`), realce dourado suave e feedback tátil sem cortes bruscos.
-- **Transição suave dos horários:** Os slots utilizam animação fluida `.animate-fade-slide-up` combinada com cards de skeleton harmoniosos, eliminando a quebra de layout e o piscar repentino ao mudar de data.
-
-**Testes e Build:**
-- Todos os 22 testes automatizados verdes e blindados no ambiente isolado.
-- Build de produção do Next.js 15 gerado sem erros.
+- **Rodapé Global de Autoria:** Inserido no contêiner principal da aplicação móvel em [`src/app/layout.tsx`](src/app/layout.tsx) com o texto "Desenvolvido por mathz36", com link clicável e seguro para `https://github.com/mathz36`.
+- **Microinterações e Fluidez:** Auto-rolagem suave nos dias da semana e transição com animação nos horários já integradas.
+- **Testes e Build:** 22 testes automatizados passando sem regressões; build de produção do Next.js gerado com sucesso.
 
 **Onde Paramos:**
-Alterações implementadas, testadas e prontas para validação do usuário. Sistema em estado estável.
+Aplicação estável com rodapé de autoria integrado e testado. Pronto para novos direcionamentos do usuário.

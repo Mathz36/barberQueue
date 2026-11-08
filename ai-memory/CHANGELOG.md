@@ -4,6 +4,15 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.2.4] - 2026-11-08
+
+### Layout e Rodapé de Autoria
+- **Commit:** `feat: add developer credits footer with github link`
+  - Inclusão de rodapé (`footer`) em [`src/app/layout.tsx`](src/app/layout.tsx) com créditos "Desenvolvido por mathz36".
+  - Link clicável e seguro (`target="_blank"` e `rel="noopener noreferrer"`) apontando para `https://github.com/mathz36` com destaque dourado estilizado.
+
+---
+
 ## [1.2.3] - 2026-11-08
 
 ### Experiência do Cliente e Microinterações Mobile

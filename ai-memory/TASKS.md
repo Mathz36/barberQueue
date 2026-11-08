@@ -20,6 +20,7 @@ Este arquivo é gerenciado pelo **Planner Agent** e organiza a divisão de traba
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **TSK-001** até **TSK-020** | Equipe | Fases 1 a 6: Base completa, Uploads, Horários, Notificações e Blindagem de Dados | `DONE` | Concluído | Ver CHANGELOG |
 | **TSK-025** | Frontend | Transição fluida e suave na seleção de dias da semana e troca de slots no cliente | `DONE` | Sim | `feat: add fluid animation and smooth transition for day selection` |
+| **TSK-026** | Frontend | Rodapé de autoria com link do GitHub (`mathz36`) em layout global | `DONE` | Sim | `feat: add developer credits footer with github link` |
 
 ---
 
