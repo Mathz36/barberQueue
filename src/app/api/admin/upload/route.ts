@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
-import { getProfile, updateProfile } from "@/lib/storage";
-
-const UPLOADS_DIR = path.resolve(process.cwd(), "public", "uploads");
+import { getProfile, updateProfile, UPLOADS_DIR } from "@/lib/storage";
 
 export async function POST(request: Request) {
   try {

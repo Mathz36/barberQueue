@@ -2,9 +2,7 @@ import { describe, it, expect } from "vitest";
 import { POST as uploadRoute } from "@/app/api/admin/upload/route";
 import fs from "fs/promises";
 import path from "path";
-import { getProfile } from "@/lib/storage";
-
-const UPLOADS_DIR = path.resolve(process.cwd(), "public", "uploads");
+import { getProfile, UPLOADS_DIR } from "@/lib/storage";
 
 describe("Upload de Imagem com Sobrescrita", () => {
   it("deve rejeitar upload sem PIN correto", async () => {

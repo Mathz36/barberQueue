@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { getStartOfCurrentWeek, pruneOldAppointments, createAppointment, getAppointments } from "@/lib/storage";
+import { getStartOfCurrentWeek, pruneOldAppointments, createAppointment, getAppointments, DATA_DIR } from "@/lib/storage";
 import fs from "fs/promises";
 import path from "path";
 import { Appointment } from "@/types";
 
-const APPOINTMENTS_FILE = path.resolve(process.cwd(), "data/appointments.json");
+const APPOINTMENTS_FILE = path.join(DATA_DIR, "appointments.json");
 
 describe("Rotina de Limpeza Semanal Automática (7 Dias / Expurgador Dominical)", () => {
   it("deve identificar corretamente o Domingo como o início da semana atual", () => {

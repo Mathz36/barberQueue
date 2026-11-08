@@ -11,7 +11,15 @@ import {
   TimeSlotStatus,
 } from "@/types";
 
-const DATA_DIR = path.resolve(process.cwd(), "data");
+export const DATA_DIR =
+  process.env.NODE_ENV === "test"
+    ? path.resolve(process.cwd(), "data-test")
+    : path.resolve(process.cwd(), "data");
+
+export const UPLOADS_DIR =
+  process.env.NODE_ENV === "test"
+    ? path.resolve(process.cwd(), "public", "uploads-test")
+    : path.resolve(process.cwd(), "public", "uploads");
 
 const PROFILE_FILE = path.join(DATA_DIR, "profile.json");
 const QUEUE_FILE = path.join(DATA_DIR, "queue.json");
