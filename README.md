@@ -236,9 +236,8 @@ npm test
 
 ## 🔒 Segurança e Privacidade
 
-- **Zero vazamento de dados no Git:** Arquivos sensíveis (`.env.local` e pastas de dados locais) são permanentemente ignorados pelo `.gitignore`.
-- **Row Level Security (RLS):** A leitura pública é permitida apenas para dados necessários da barbearia, enquanto a escrita administrativa exige a chave de serviço (`service_role`).
-- **Sanitização de Inputs:** Tratamento contra injeções e validação de formatos de data/hora no servidor.
+- **Row Level Security (RLS):** Leitura pública restrita estritamente aos dados de exibição da barbearia, enquanto mutações administrativas exigem autenticação via Service Role.
+- **Sanitização de Inputs:** Validação de schemas e formatos de data/hora no backend para prevenção de concorrência ou dados malformados.
 
 ---
 
