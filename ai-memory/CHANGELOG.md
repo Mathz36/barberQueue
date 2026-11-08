@@ -4,6 +4,16 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.2.3] - 2026-11-08
+
+### Experiência do Cliente e Microinterações Mobile
+- **Commit:** `feat: add fluid animation and smooth transition for day selection`
+  - Transição suave e orgânica ao clicar nos dias da semana no smartphone: auto-rolagem suave centralizada (`scrollIntoView({ behavior: 'smooth', inline: 'center' })`).
+  - Animação tátil nos botões de dias com escala suave (`scale-105`), realce dourado e transição com curva `cubic-bezier`.
+  - Transição crossfade e slide-up suave nos slots de horário com `.animate-fade-slide-up` e skeleton cards fluidos durante troca de dia, eliminando qualquer piscar abrupto da tela.
+
+---
+
 ## [1.2.2] - 2026-11-08
 
 ### Segurança e Integridade de Dados

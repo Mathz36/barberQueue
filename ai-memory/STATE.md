@@ -1,18 +1,21 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** REQUISITO DE TRANSIÇÃO FLUIDA DE DIAS RECEBIDO - AGUARDANDO AUTORIZAÇÃO  
+> **Status Geral:** TRANSIÇÃO FLUIDA DE DIAS E SLOTS IMPLEMENTADA E TESTADA  
 > **Fase Atual:** Fase 7 - Polimento de Animações e Fluidez Visual Mobile  
 
 ---
 
-## 📌 Contexto Atual e Novo Ajuste Solicitado
+## 📌 Contexto Atual e Entregas Recentes
 
-O usuário solicitou um refinamento de microinteração no lado do cliente:
-- **Problema:** Ao tocar nos dias da semana no carrossel de agendamento, a mudança é instantânea e abrupta (tela pisca e troca de forma seca).
-- **Objetivo:** Adicionar uma transição suave, fluida e tátil ao alternar entre os dias da semana e ao exibir os horários da nova data selecionada.
+O refinamento de microinterações no lado do cliente foi concluído com sucesso:
+- **Auto-rolagem suave:** Ao tocar em qualquer dia da semana no carrossel, o botão desliza com centralização suave (`scrollIntoView({ behavior: 'smooth', inline: 'center' })`).
+- **Animação tátil do botão:** Efeito de escala suave (`scale-105`), realce dourado suave e feedback tátil sem cortes bruscos.
+- **Transição suave dos horários:** Os slots utilizam animação fluida `.animate-fade-slide-up` combinada com cards de skeleton harmoniosos, eliminando a quebra de layout e o piscar repentino ao mudar de data.
 
-O **Planner Agent** e o **Frontend Agent** estruturaram a solução visual em [`ai-memory/TASKS.md`](./TASKS.md).
+**Testes e Build:**
+- Todos os 22 testes automatizados verdes e blindados no ambiente isolado.
+- Build de produção do Next.js 15 gerado sem erros.
 
 **Onde Paramos:**
-Apresentando o plano técnico de **O QUE** e **COMO** e aguardando a autorização expressa do usuário antes de aplicar as modificações.
+Alterações implementadas, testadas e prontas para validação do usuário. Sistema em estado estável.

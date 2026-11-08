@@ -111,6 +111,16 @@ export default function ClientPage() {
     return days;
   };
 
+  const handleDaySelect = (fullDate: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    if (fullDate === selectedDate) return;
+    e.currentTarget.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+    setSelectedDate(fullDate);
+  };
+
   const handleOpenBooking = (timeSlot: string) => {
     setSelectedSlot(timeSlot);
     const savedName = typeof window !== "undefined" ? localStorage.getItem("barbearia_client_name") || "" : "";
@@ -296,20 +306,20 @@ export default function ClientPage() {
           </div>
 
           {/* Carrossel de Dias com toque ergonômico */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none snap-x -mx-1 px-1">
+          <div className="flex gap-2.5 overflow-x-auto pb-3 scrollbar-none snap-x scroll-smooth -mx-1 px-1">
             {getUpcomingDays().map((item) => {
               const isSelected = item.fullDate === selectedDate;
               return (
                 <button
                   key={item.fullDate}
-                  onClick={() => setSelectedDate(item.fullDate)}
-                  className={`snap-start flex-shrink-0 flex flex-col items-center justify-center w-16 py-3 rounded-xl border transition active:scale-95 ${
+                  onClick={(e) => handleDaySelect(item.fullDate, e)}
+                  className={`snap-center flex-shrink-0 flex flex-col items-center justify-center w-16 py-3.5 rounded-2xl border transition-all duration-300 ease-out transform active:scale-95 ${
                     isSelected
-                      ? "bg-gold text-black border-gold font-bold shadow-glow"
-                      : "bg-neutral-900/90 text-neutral-300 border-neutral-800 hover:border-gold/40"
+                      ? "bg-gold text-black border-gold font-bold shadow-glow scale-105 z-10"
+                      : "bg-neutral-900/90 text-neutral-300 border-neutral-800 hover:border-gold/40 scale-100 opacity-80 hover:opacity-100"
                   }`}
                 >
-                  <span className={`text-[11px] uppercase tracking-wider ${isSelected ? "text-neutral-950 font-bold" : "text-neutral-400"}`}>
+                  <span className={`text-[11px] uppercase tracking-wider transition-colors duration-200 ${isSelected ? "text-neutral-950 font-bold" : "text-neutral-400"}`}>
                     {item.weekDayName}
                   </span>
                   <span className="text-lg font-extrabold mt-0.5">{item.dayNumber}</span>
@@ -328,70 +338,83 @@ export default function ClientPage() {
             </h3>
           </div>
 
-          {loadingDay ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-2 text-neutral-400">
-              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs">Consultando agenda...</span>
-            </div>
-          ) : dayStatus?.isBlocked ? (
-            /* AVISO DO BARBEIRO PARA DIA FECHADO */
-            <div className="rounded-2xl bg-amber-950/40 border border-amber-600/40 p-5 text-neutral-200 space-y-2.5">
-              <div className="flex items-center gap-2 text-amber-400 font-semibold text-sm">
-                <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-                <span>Barbearia Fechada Nesta Data</span>
-              </div>
-              <p className="text-xs text-amber-200/90 leading-relaxed">
-                {dayStatus.blockedReason || "Não haverá atendimento neste dia."}
-              </p>
-              <p className="text-xs text-neutral-400 font-medium">
-                ℹ️ Caso você já tenha marcado este dia, por favor escolha uma data alternativa acima para o seu corte.
-              </p>
-            </div>
-          ) : !dayStatus?.isOpenDay ? (
-            <div className="rounded-2xl bg-neutral-900/80 border border-neutral-800 p-6 text-center text-neutral-400 text-xs">
-              A barbearia não abre neste dia da semana. Escolha outro dia no calendário!
-            </div>
-          ) : (
-            /* LISTAGEM DOS SLOTS DE HORÁRIO COM CONTAGEM ANÔNIMA */
-            <div className="space-y-2.5">
-              {dayStatus?.slots.map((slot) => {
-                return (
+          <div key={selectedDate} className="animate-fade-slide-up">
+            {loadingDay && dayStatus?.date !== selectedDate ? (
+              /* SKELETON CARDS FLUIDOS COM MESMO TAMANHO DOS SLOTS */
+              <div className="space-y-2.5 animate-pulse">
+                {[1, 2, 3, 4].map((i) => (
                   <div
-                    key={slot.timeSlot}
-                    className="flex items-center justify-between p-3.5 rounded-xl bg-neutral-900/90 border border-neutral-800/90 hover:border-gold/30 transition"
+                    key={i}
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-neutral-900/60 border border-neutral-800/60"
                   >
-                    <div className="space-y-1">
-                      <div className="text-base font-bold text-white tracking-wide">
-                        {slot.timeSlot}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-                        {slot.bookedCount === 0 ? (
-                          <span className="text-emerald-400 flex items-center gap-1">
-                            <Sparkles className="w-3.5 h-3.5" />
-                            Horário livre
-                          </span>
-                        ) : (
-                          <span className="text-neutral-300 flex items-center gap-1">
-                            <Users className="w-3.5 h-3.5 text-gold" />
-                            {slot.bookedCount === 1
-                              ? "1 pessoa agendou"
-                              : `${slot.bookedCount} pessoas agendaram`}
-                          </span>
-                        )}
-                      </div>
+                    <div className="space-y-2">
+                      <div className="w-16 h-4 bg-neutral-800 rounded"></div>
+                      <div className="w-24 h-3 bg-neutral-800/60 rounded"></div>
                     </div>
-
-                    <button
-                      onClick={() => handleOpenBooking(slot.timeSlot)}
-                      className="py-2 px-4 rounded-xl bg-gradient-to-r from-gold to-yellow-500 hover:from-yellow-500 hover:to-gold text-black font-bold text-xs shadow transition active:scale-95"
-                    >
-                      Agendar
-                    </button>
+                    <div className="w-20 h-8 bg-neutral-800/80 rounded-xl"></div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                ))}
+              </div>
+            ) : dayStatus?.isBlocked ? (
+              /* AVISO DO BARBEIRO PARA DIA FECHADO */
+              <div className="rounded-2xl bg-amber-950/40 border border-amber-600/40 p-5 text-neutral-200 space-y-2.5">
+                <div className="flex items-center gap-2 text-amber-400 font-semibold text-sm">
+                  <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                  <span>Barbearia Fechada Nesta Data</span>
+                </div>
+                <p className="text-xs text-amber-200/90 leading-relaxed">
+                  {dayStatus.blockedReason || "Não haverá atendimento neste dia."}
+                </p>
+                <p className="text-xs text-neutral-400 font-medium">
+                  ℹ️ Caso você já tenha marcado este dia, por favor escolha uma data alternativa acima para o seu corte.
+                </p>
+              </div>
+            ) : !dayStatus?.isOpenDay ? (
+              <div className="rounded-2xl bg-neutral-900/80 border border-neutral-800 p-6 text-center text-neutral-400 text-xs">
+                A barbearia não abre neste dia da semana. Escolha outro dia no calendário!
+              </div>
+            ) : (
+              /* LISTAGEM DOS SLOTS DE HORÁRIO COM CONTAGEM ANÔNIMA */
+              <div className="space-y-2.5">
+                {dayStatus?.slots.map((slot) => {
+                  return (
+                    <div
+                      key={slot.timeSlot}
+                      className="flex items-center justify-between p-3.5 rounded-xl bg-neutral-900/90 border border-neutral-800/90 hover:border-gold/30 transition"
+                    >
+                      <div className="space-y-1">
+                        <div className="text-base font-bold text-white tracking-wide">
+                          {slot.timeSlot}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+                          {slot.bookedCount === 0 ? (
+                            <span className="text-emerald-400 flex items-center gap-1">
+                              <Sparkles className="w-3.5 h-3.5" />
+                              Horário livre
+                            </span>
+                          ) : (
+                            <span className="text-neutral-300 flex items-center gap-1">
+                              <Users className="w-3.5 h-3.5 text-gold" />
+                              {slot.bookedCount === 1
+                                ? "1 pessoa agendou"
+                                : `${slot.bookedCount} pessoas agendaram`}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleOpenBooking(slot.timeSlot)}
+                        className="py-2 px-4 rounded-xl bg-gradient-to-r from-gold to-yellow-500 hover:from-yellow-500 hover:to-gold text-black font-bold text-xs shadow transition active:scale-95"
+                      >
+                        Agendar
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </section>
       </main>
 
