@@ -54,23 +54,23 @@ create policy "Remoção de fotos na barbearia"
   on storage.objects for delete
   using (bucket_id = 'barbearia');
 
--- 3. Carga Inicial de Dados (Seed) com os dados da Thiago Barbearia
+-- 3. Carga Inicial de Dados de Exemplo (Seed Demonstrativo para Novos Clones)
 insert into app_data (key, value)
 values 
   ('profile', '{
-    "name": "Thiago Barbearia",
-    "bio": "Cortes clássicos e modernos, barba na navalha e muito mais. Atendimento acolhedor e de excelência.\nTambém com atendimento domiciliar via Whatsapp",
+    "name": "Barbearia Modelo",
+    "bio": "Cortes clássicos e modernos, barba na navalha e atendimento acolhedor. Agende seu horário ou acompanhe a fila ao vivo!",
     "avatarUrl": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=400&q=80",
     "bannerUrl": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1200&q=80",
-    "whatsappNumber": "553299436594",
-    "instagramUrl": "https://www.instagram.com/_thiagobarbeiro_/",
-    "primaryColor": "#000000",
-    "secondaryColor": "#FFD700",
+    "whatsappNumber": "5511999999999",
+    "instagramUrl": "https://instagram.com/barbearia",
+    "primaryColor": "#121212",
+    "secondaryColor": "#D4AF37",
     "adminPin": "1234"
   }'::jsonb),
   ('queue', '{
     "count": 0,
-    "updatedAt": "2026-11-08T18:00:00.000Z"
+    "updatedAt": "2026-01-01T12:00:00.000Z"
   }'::jsonb),
   ('schedule', '{
     "days": [
@@ -83,23 +83,6 @@ values
       { "dayOfWeek": 0, "dayName": "Domingo", "isOpen": false, "openTime": "09:00", "closeTime": "14:00", "lunchStart": "", "lunchEnd": "" }
     ]
   }'::jsonb),
-  ('blocked_days', '[
-    { "date": "2026-11-12", "reason": "Folga de Aniversário" }
-  ]'::jsonb),
-  ('appointments', '[
-    {
-      "id": "apt_1794158741288_4wm72",
-      "clientName": "Matheus",
-      "date": "2026-11-10",
-      "timeSlot": "09:00",
-      "createdAt": "2026-11-08T17:25:41.288Z"
-    },
-    {
-      "id": "apt_1794160663815_p3g8o",
-      "clientName": "Matheus",
-      "date": "2026-11-10",
-      "timeSlot": "10:00",
-      "createdAt": "2026-11-08T17:57:43.815Z"
-    }
-  ]'::jsonb)
+  ('blocked_days', '[]'::jsonb),
+  ('appointments', '[]'::jsonb)
 on conflict (key) do nothing;

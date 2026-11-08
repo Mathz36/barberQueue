@@ -79,26 +79,17 @@ async function readJson<T>(filePath: string, defaultValue: T): Promise<T> {
         return data.value as T;
       }
 
-      // Se a chave ainda não existe no Supabase, tenta usar o template local como carga inicial (seed)
-      let seedValue = defaultValue;
-      try {
-        const rawLocal = await fs.readFile(filePath, "utf-8");
-        seedValue = JSON.parse(rawLocal) as T;
-      } catch {
-        // Usa defaultValue caso o arquivo local não exista
-      }
-
-      // Salva a semente no Supabase para as próximas consultas
+      // Se a chave ainda não existe no Supabase, inicializa com o defaultValue
       await admin.from("app_data").upsert(
         {
           key,
-          value: seedValue,
+          value: defaultValue,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "key" }
       );
 
-      return seedValue;
+      return defaultValue;
     }
   }
 

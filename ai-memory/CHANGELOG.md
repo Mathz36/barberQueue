@@ -4,6 +4,17 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.4.0] - 2026-11-08
+
+### Desacoplamento Completo de Arquivos Locais e 100% Supabase
+- **Commit:** `chore: remove local data json directory and rely on supabase storage`
+  - Remoção definitiva da pasta `data/` do repositório no GitHub (zero arquivos JSON versionados).
+  - Configuração do `.gitignore` para ignorar `data/`.
+  - Atualização de [`supabase/schema.sql`](supabase/schema.sql) com dados 100% modelo/demonstrativos para novos clones.
+  - Constantes de fallback centralizadas em código TypeScript em [`src/lib/storage.ts`](src/lib/storage.ts).
+
+---
+
 ## [1.3.2] - 2026-11-08
 
 ### Mensagens Claras de Horário de Encerramento e Abertura
