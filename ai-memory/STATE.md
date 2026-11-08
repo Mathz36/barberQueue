@@ -1,25 +1,33 @@
 # AI-Memory: Current Project State (Estado Atual)
 
 > **Última Atualização:** 2026-11-08  
-> **Status Geral:** NOVOS REQUISITOS RECEBIDOS (UPLOAD DE IMAGEM & HORÁRIOS POR DIA COM ALMOÇO) - AGUARDANDO AUTORIZAÇÃO  
-> **Fase Atual:** Fase 3 - Evolução do Painel Administrativo e Regras de Horários  
+> **Status Geral:** AJUSTES DE UPLOAD E HORÁRIOS CONCLUÍDOS COM 20/20 TESTES PASSANDO  
+> **Fase Atual:** Fase 3 - Conclusão dos Ajustes Solicitados pelo Usuário  
 
 ---
 
-## 📌 Contexto Atual e Novos Requisitos
+## 📌 Contexto Atual e Entregas Recentes
 
-O usuário solicitou dois ajustes importantes para o painel de administração (`/admin`) e lógica de agendamento:
+Os dois novos requisitos solicitados foram desenvolvidos, testados e validados:
 
-1. **Upload Direto de Imagem (Substituição de URLs externas):**
-   - Permitir que o barbeiro faça upload direto de arquivos de imagem do seu celular/computador (foto de perfil e banner).
-   - Política de sobrescrita: uma imagem sobrescreve a anterior para não acumular arquivos desnecessários no disco (`public/uploads/avatar.*` e `public/uploads/banner.*`).
-2. **Horários de Atendimento Individuais por Dia da Semana (Segunda a Domingo):**
-   - Exibir todos os dias da semana (Segunda a Domingo).
-   - Permitir ativar/desativar cada dia individualmente.
-   - Configurar horário de abertura e fechamento para cada dia.
-   - Configurar **horário de almoço opcional** (início e fim): se preenchido, os slots desse período são omitidos da agenda do cliente; se deixado vazio, não há pausa para almoço.
+1. **Upload Direto de Imagem com Sobrescrita Automática:**
+   - Endpoint `POST /api/admin/upload` implementado com suporte a `multipart/form-data`.
+   - Ao enviar uma nova foto de perfil ou banner, o arquivo anterior do mesmo tipo é automaticamente deletado de `public/uploads/` e substituído pela nova versão, sem acumular arquivos órfãos.
+   - Interface do Admin com seletores de arquivo táteis para smartphone e preview imediato.
+2. **Horários de Segunda a Domingo & Intervalo de Almoço Opcional:**
+   - Modelo de dados atualizado para conter os 7 dias da semana ordenados (Segunda a Domingo).
+   - Cada dia possui controle individual de "Aberto/Fechado", "Horário de Abertura", "Horário de Fechamento" e "Horário de Almoço (opcional)".
+   - Quando o almoço está preenchido, os slots desse período são omitidos da agenda do cliente. Quando vazio, todos os slots regulares de 1h ficam disponíveis.
+   - Botão no painel para limpar o almoço com 1 toque no celular.
+3. **Qualidade & CI/CD (Tester Agent):**
+   - 20 testes automatizados passando em 6 suítes (cobertura total de regras de agendamento, expurgo semanal, fila, upload e horários).
+   - Build de produção compilado com sucesso (`next build`).
 
-O **Planner Agent** atualizou o modelo técnico em [`ai-memory/ARCHITECTURE.md`](./ARCHITECTURE.md) e o backlog de tarefas em [`ai-memory/TASKS.md`](./TASKS.md).
+---
 
-**Onde Paramos:**
-Apresentando o plano técnico de **O QUE** e **COMO** e aguardando a autorização expressa do usuário antes de aplicar as modificações.
+## 🚀 Como Executar
+
+- **Servidor Dev:** `npm run dev`
+- **Página do Cliente:** `http://localhost:3000`
+- **Painel do Barbeiro:** `http://localhost:3000/admin` (PIN: `1234`)
+- **Suíte de Testes:** `npm test`
