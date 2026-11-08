@@ -14,12 +14,12 @@ Este arquivo é gerenciado pelo **Planner Agent** e organiza a divisão de traba
 
 | ID | Agente | Título da Tarefa | Status | Requer Aprovação | Commits |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TSK-001** até **TSK-018** | Equipe | Fases 1 a 4: Funcionalidades completas, Upload, Horários e Notificações | `DONE` | Concluído | Ver CHANGELOG |
-| **TSK-019** | Tester / Frontend | Zero Regression: Teste e correção da exibição da data real do corte no Admin | `DONE` | Autorizado | `fix:` |
+| **TSK-001** até **TSK-019** | Equipe | Fases 1 a 5: App completo, Uploads, Horários, Notificações e Bugfix de Datas | `DONE` | Concluído | Ver CHANGELOG |
+| **TSK-020** | Backend / Tester | Blindagem e isolamento total do storage de testes (`data-test/`) para proteger dados reais | `DONE` | Autorizado | `fix:` |
 
 ---
 
-## 📝 Detalhamento da Tarefa TSK-019
+## 📝 Detalhamento da Tarefa TSK-020
 
-### [TSK-019] Zero Regression: Exibição da Data Correta do Agendamento
-- **Escopo:** Criação do teste de reprodução `tests/bug-agenda-date.test.ts`. Correção em `src/app/admin/page.tsx` para exibir no card a data do corte `apt.date` formatada (`10/11/2026`) com abas de visualização ("Por Dia" e "Toda a Semana").
+### [TSK-020] Blindagem e Isolamento de Storage de Teste
+- **Escopo:** Configurar `DATA_DIR` e `UPLOADS_DIR` para usar `data-test/` e `public/uploads-test/` quando em ambiente de testes (`NODE_ENV === "test"`). Adicionar pastas de teste ao `.gitignore`. Garantir que nenhum teste sobrescreva a base real da barbearia (`data/profile.json`, `data/appointments.json`, etc.).

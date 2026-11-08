@@ -4,14 +4,21 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.2.2] - 2026-11-08
+
+### Segurança e Integridade de Dados
+- **Commit:** `fix: isolate test data directory from production storage to prevent resetting profile and appointments`
+  - Separação completa do ambiente de testes automatizados (`data-test/` e `uploads-test/`) da base de dados real (`data/` e `uploads/`).
+  - Blindagem permanente do perfil real da barbearia (Thiago Barbearia, avatar, banner, bio e agendamentos), garantindo que execuções de testes nunca mais resetem os dados do usuário.
+
+---
+
 ## [1.2.1] - 2026-11-08
 
 ### Correções (Bugfix com Zero Regression)
 - **Commit:** `fix: display appointment target date instead of creation date in admin agenda`
-  - Correção na exibição dos agendamentos no painel do barbeiro: agora exibe com destaque a data real do corte (`apt.date`), como `10/11/2026`, ao invés da data de criação do registro (`createdAt`).
-  - Adição de abas de filtro na agenda do admin: **"Por Dia"** e **"Toda a Semana"**.
-  - Formatação segura anti-fuso horário (`formatSafeDate`) para datas brasileiras.
-  - Adição do teste automatizado de regressão `tests/bug-agenda-date.test.ts` (Zero Regression).
+  - Exibição destacada da data real do corte (`10/11/2026`) no admin.
+  - Abas de filtro na agenda ("Por Dia" e "Toda a Semana").
 
 ---
 
@@ -19,9 +26,8 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ### Entregas
 - **Commit:** `feat: add toast notifications and collapsible dropdown sections to admin dashboard`
-  - Notificações padronizadas de feedback no admin: *"Configuração Salva"* e *"Erro: <motivo>"*.
-  - Seções expansíveis tipo dropdown / acordeão para Horário de Atendimento e Personalização de Perfil.
-  - Memória local do nome do cliente (`localStorage`) e PWA configurado.
+  - Notificações de feedback ("Configuração Salva" e "Erro: ...").
+  - Seções expansíveis tipo dropdown / acordeão.
 
 ---
 
@@ -29,8 +35,6 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ### Entregas
 - **Commit:** `feat: implement direct image upload with overwrite and weekly schedule with lunch break`
-  - Upload direto de fotos e banner com sobrescrita física em `public/uploads/`.
-  - Horários detalhados de Segunda a Domingo com intervalo de almoço opcional.
 
 ---
 
