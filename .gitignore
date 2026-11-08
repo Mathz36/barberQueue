@@ -10,10 +10,6 @@ coverage/
 data-test/
 public/uploads-test/
 
-# Uploads
-public/uploads/*
-!public/uploads/.gitkeep
-
 # Production build artifacts
 dist/
 build/

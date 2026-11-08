@@ -10,6 +10,7 @@ import {
   DayStatus,
   TimeSlotStatus,
 } from "@/types";
+import { getSupabaseAdmin, isSupabaseConfigured } from "./supabase";
 
 export const DATA_DIR =
   process.env.NODE_ENV === "test"
@@ -27,8 +28,33 @@ const SCHEDULE_FILE = path.join(DATA_DIR, "schedule.json");
 const BLOCKED_DAYS_FILE = path.join(DATA_DIR, "blocked_days.json");
 const APPOINTMENTS_FILE = path.join(DATA_DIR, "appointments.json");
 
-// Helper para gravação atômica
+function getKeyFromPath(filePath: string): string {
+  return path.basename(filePath, ".json");
+}
+
+// Helper para gravação: Supabase em produção, disco local em dev/testes
 async function atomicWriteJson<T>(filePath: string, data: T): Promise<void> {
+  if (isSupabaseConfigured()) {
+    const admin = getSupabaseAdmin();
+    if (admin) {
+      const key = getKeyFromPath(filePath);
+      const { error } = await admin.from("app_data").upsert(
+        {
+          key,
+          value: data,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "key" }
+      );
+      if (error) {
+        console.error(`Erro ao gravar no Supabase (${key}):`, error);
+        throw new Error(`Falha ao salvar no banco Supabase: ${error.message}`);
+      }
+      return;
+    }
+  }
+
+  // Fallback para disco local (dev e testes)
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   const tempPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
   const content = JSON.stringify(data, null, 2);
@@ -36,8 +62,46 @@ async function atomicWriteJson<T>(filePath: string, data: T): Promise<void> {
   await fs.rename(tempPath, filePath);
 }
 
-// Helper para leitura segura
+// Helper para leitura: Supabase em produção, disco local em dev/testes
 async function readJson<T>(filePath: string, defaultValue: T): Promise<T> {
+  if (isSupabaseConfigured()) {
+    const admin = getSupabaseAdmin();
+    if (admin) {
+      const key = getKeyFromPath(filePath);
+      const { data, error } = await admin
+        .from("app_data")
+        .select("value")
+        .eq("key", key)
+        .maybeSingle();
+
+      if (!error && data?.value !== undefined && data?.value !== null) {
+        return data.value as T;
+      }
+
+      // Se a chave ainda não existe no Supabase, tenta usar o template local como carga inicial (seed)
+      let seedValue = defaultValue;
+      try {
+        const rawLocal = await fs.readFile(filePath, "utf-8");
+        seedValue = JSON.parse(rawLocal) as T;
+      } catch {
+        // Usa defaultValue caso o arquivo local não exista
+      }
+
+      // Salva a semente no Supabase para as próximas consultas
+      await admin.from("app_data").upsert(
+        {
+          key,
+          value: seedValue,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "key" }
+      );
+
+      return seedValue;
+    }
+  }
+
+  // Fallback para disco local (dev e testes)
   try {
     const raw = await fs.readFile(filePath, "utf-8");
     return JSON.parse(raw) as T;

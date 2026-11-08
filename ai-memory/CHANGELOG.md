@@ -4,6 +4,28 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.3.0] - 2026-11-08
+
+### Migração para Supabase e Cron Keep-Alive na Vercel
+- **Commit:** `feat: migrate storage to supabase with image bucket and vercel keep-alive cron`
+  - Implementação de adaptador híbrido de persistência em [`src/lib/storage.ts`](src/lib/storage.ts): armazena em tabela `app_data` no Supabase (JSONB) quando configurado, com fallback automático para arquivos locais em testes/desenvolvimento.
+  - Upload de avatar e banner diretamente para o Bucket de Storage público `barbearia` do Supabase em [`src/app/api/admin/upload/route.ts`](src/app/api/admin/upload/route.ts).
+  - Prevenção automática de inatividade de 14 dias do Supabase via Vercel Cron Job em [`vercel.json`](vercel.json) e rota de ping [`src/app/api/cron/keep-alive/route.ts`](src/app/api/cron/keep-alive/route.ts).
+  - Criação do script de 1 clique [`supabase/schema.sql`](supabase/schema.sql) com tabelas, políticas de segurança e seed inicial da Thiago Barbearia.
+  - Modelos de configuração em [`.env.example`](.env.example) e [`.env.local`](.env.local).
+
+---
+
+## [1.2.5] - 2026-11-08
+
+### Restauração de Dados de Produção para Repositório Privado
+- **Commit:** `chore: restore production profile and appointment data for private repository`
+  - Restauração do perfil real de produção em [`data/profile.json`](data/profile.json) (Thiago Barbearia, WhatsApp, Instagram e configurações visuais).
+  - Restauração de agendamentos reais e bloqueios de agenda.
+  - Liberação de uploads no `.gitignore` para versionamento em repositório privado.
+
+---
+
 ## [1.2.4] - 2026-11-08
 
 ### Layout e Rodapé de Autoria

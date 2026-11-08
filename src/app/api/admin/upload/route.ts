@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import { getProfile, updateProfile, UPLOADS_DIR } from "@/lib/storage";
+import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -30,13 +31,53 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Nenhum arquivo enviado." }, { status: 400 });
     }
 
-    // Garante que o diretório public/uploads exista
-    await fs.mkdir(UPLOADS_DIR, { recursive: true });
-
     // Determina a extensão do arquivo
     const rawExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
     const allowedExts = ["jpg", "jpeg", "png", "webp", "gif"];
     const ext = allowedExts.includes(rawExt) ? rawExt : "jpg";
+    const fileName = `${type}.${ext}`;
+
+    // SE SUPABASE ESTIVER CONFIGURADO (PRODUÇÃO NA VERCEL):
+    if (isSupabaseConfigured()) {
+      const admin = getSupabaseAdmin();
+      if (admin) {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        const { error: uploadError } = await admin.storage
+          .from("barbearia")
+          .upload(fileName, buffer, {
+            upsert: true,
+            contentType: file.type || `image/${ext === "jpg" ? "jpeg" : ext}`,
+          });
+
+        if (uploadError) {
+          console.error("Erro no Supabase Storage:", uploadError);
+          throw new Error(`Falha no Supabase Storage: ${uploadError.message}`);
+        }
+
+        const { data: urlData } = admin.storage
+          .from("barbearia")
+          .getPublicUrl(fileName);
+
+        const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+        if (type === "avatar") {
+          await updateProfile({ avatarUrl: publicUrl });
+        } else {
+          await updateProfile({ bannerUrl: publicUrl });
+        }
+
+        return NextResponse.json({
+          success: true,
+          url: publicUrl,
+          type,
+        });
+      }
+    }
+
+    // FALLBACK LOCAL / TESTES: Grava na pasta física
+    await fs.mkdir(UPLOADS_DIR, { recursive: true });
 
     // REGRA DE SOBRESCRITA: remove qualquer arquivo anterior do mesmo tipo
     const existingFiles = await fs.readdir(UPLOADS_DIR);
@@ -46,8 +87,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Salva o novo arquivo
-    const fileName = `${type}.${ext}`;
+    // Salva o novo arquivo local
     const filePath = path.join(UPLOADS_DIR, fileName);
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
