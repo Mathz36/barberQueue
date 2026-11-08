@@ -4,6 +4,18 @@ Todas as alterações significativas no projeto são registradas aqui em ordem c
 
 ---
 
+## [1.2.0] - 2026-11-08
+
+### Entregas
+- **Commit:** `feat: add toast notifications and collapsible dropdown sections to admin dashboard`
+  - Notificações padronizadas de feedback no admin: *"Configuração Salva"* em verde e *"Erro: <motivo>"* em vermelho com auto-fechamento e dismiss manual.
+  - Seções expansíveis tipo dropdown / acordeão para **Horário de Atendimento** e **Personalização de Perfil** no painel do barbeiro, otimizando o espaço em smartphones.
+  - Memória local do nome do cliente (`localStorage`) pré-preenchendo agendamentos futuros.
+  - Configuração PWA (`manifest.json` e ícone SVG) para instalação na tela inicial do celular como app nativo.
+  - Botão de compartilhamento rápido da agenda do dia formatada para o WhatsApp no admin.
+
+---
+
 ## [1.1.0] - 2026-11-08
 
 ### Entregas
